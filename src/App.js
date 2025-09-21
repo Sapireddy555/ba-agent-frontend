@@ -1,5 +1,8 @@
 import React, { useRef, useState, useEffect } from 'react';
+// Removed duplicate ArrowRight import
 import { createPortal } from 'react-dom';
+import { 
+// Removed lucide-react icon imports
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import JSZip from 'jszip';
@@ -10,9 +13,8 @@ import OneDrivePicker from './components/OneDrivePicker';
 import EnhancedDocumentViewer from './components/EnhancedDocumentViewer';
 import AdvancedSearch from './components/AdvancedSearch';
 import ResponsiveLayout, { ResponsiveGrid, ResponsiveCard, ResponsiveButton, ResponsiveModal } from './components/ResponsiveLayout';
-import SmartSuggestions from './components/SmartSuggestions';
 import RealTimeComments from './components/RealTimeComments';
-import MultiLanguageSupport from './components/MultiLanguageSupport';
+// Removed SmartSuggestions and MultiLanguageSupport imports
 
 // API base URL - use environment variable or fallback to localhost
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://127.0.0.1:5000';
@@ -105,15 +107,15 @@ function OneDriveStatusIndicator() {
   const getStatusIcon = () => {
     switch (status) {
       case 'connected':
-        return <CheckCircle className="w-4 h-4 text-green-500" />;
+  return null;
       case 'not_connected':
-        return <XCircle className="w-4 h-4 text-orange-500" />;
+  return null;
       case 'not_configured':
-        return <XCircle className="w-4 h-4 text-red-500" />;
+  return null;
       case 'not_authenticated':
-        return <AlertTriangle className="w-4 h-4 text-yellow-500" />;
+  return null;
       case 'error':
-        return <AlertTriangle className="w-4 h-4 text-yellow-500" />;
+  return null;
       default:
         return <div className="w-4 h-4 border-2 border-blue-300 border-t-transparent rounded-full animate-spin"></div>;
     }
@@ -157,7 +159,7 @@ function MarkdownRenderer({ markdown, title, className = "" }) {
   return (
     <div className={`prose prose-slate max-w-none p-6 bg-white rounded-lg shadow-lg border ${className}`}>
       {title && <h2 className="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-        <FileText className="w-6 h-6" />
+  {/* Removed FileText icon */}
         {title}
       </h2>}
       <ReactMarkdown remarkPlugins={[remarkGfm]} components={{
@@ -378,7 +380,7 @@ function FormattedTextRenderer(props) {
       {title && (
         <div className="p-8 border-b border-gray-200">
           <h2 className="text-3xl font-bold text-gray-800 flex items-center gap-3">
-            <FileText className="w-8 h-8 text-gray-600" />
+            {/* Removed FileText icon */}
             {title}
           </h2>
         </div>
@@ -904,7 +906,7 @@ function MermaidDiagram({ code, id, showDownloadPng, showPngInline, title }) {
         {title && (
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-xl font-semibold text-gray-800 flex items-center gap-2">
-              <BarChart3 className="w-5 h-5" />
+              {/* Removed BarChart3 icon */}
               {title}
             </h3>
               <div className="flex items-center gap-2">
@@ -920,7 +922,7 @@ function MermaidDiagram({ code, id, showDownloadPng, showPngInline, title }) {
         
         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
           <div className="flex items-center gap-2 text-yellow-700 mb-3">
-            <AlertTriangle className="w-5 h-5" />
+            {/* Removed AlertTriangle icon */}
             <span className="font-semibold">Diagram Rendering Issue</span>
           </div>
           <p className="text-yellow-700 mb-3">{error}</p>
@@ -948,7 +950,7 @@ function MermaidDiagram({ code, id, showDownloadPng, showPngInline, title }) {
         {title && (
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-xl font-semibold text-gray-800 flex items-center gap-2">
-              <BarChart3 className="w-5 h-5" />
+              {/* Removed BarChart3 icon */}
               {title}
             </h3>
             <div className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
@@ -961,7 +963,7 @@ function MermaidDiagram({ code, id, showDownloadPng, showPngInline, title }) {
           <div ref={containerRef} className="p-4 min-h-[200px] flex items-center justify-center">
             {!code && (
               <div className="text-center">
-                <BarChart3 className="w-12 h-12 text-gray-300 mx-auto mb-2" />
+                {/* Removed BarChart3 icon */}
                 <p className="text-gray-500">No diagram code available</p>
               </div>
             )}
@@ -982,7 +984,7 @@ function MermaidDiagram({ code, id, showDownloadPng, showPngInline, title }) {
         
         <div className="mt-4 bg-blue-50 border border-blue-200 rounded-lg p-3">
           <div className="flex items-center gap-2 text-blue-700 mb-2">
-            <AlertTriangle className="w-4 h-4" />
+            {/* Removed AlertTriangle icon */}
             <span className="text-sm font-medium">Simplified Diagram</span>
           </div>
           <p className="text-blue-600 text-xs">The original diagram contained complex syntax. This is a simplified version.</p>
@@ -998,7 +1000,7 @@ function MermaidDiagram({ code, id, showDownloadPng, showPngInline, title }) {
       {title && (
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-xl font-semibold text-gray-800 flex items-center gap-2">
-            <BarChart3 className="w-5 h-5" />
+            {/* Removed BarChart3 icon */}
             {title}
           </h3>
           {showDownloadPng && (
@@ -1010,7 +1012,7 @@ function MermaidDiagram({ code, id, showDownloadPng, showPngInline, title }) {
               {loadingPng ? (
                 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
               ) : (
-                <Download className="w-4 h-4" />
+                {/* Removed Download icon */}
               )}
               Download PNG
             </button>
@@ -1022,7 +1024,7 @@ function MermaidDiagram({ code, id, showDownloadPng, showPngInline, title }) {
         <div ref={containerRef} className="p-4 min-h-[200px] flex items-center justify-center">
           {!code && (
             <div className="text-center">
-              <BarChart3 className="w-12 h-12 text-gray-300 mx-auto mb-2" />
+              {/* Removed BarChart3 icon */}
               <p className="text-gray-500">No diagram code available</p>
             </div>
           )}
@@ -1090,13 +1092,13 @@ function BacklogStats({ backlog }) {
   return (
     <div className="bg-white rounded-lg shadow-lg border p-6">
       <h3 className="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
-        <BarChart3 className="w-5 h-5" />
+  {/* Removed BarChart3 icon */}
         Project Statistics
       </h3>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
           <div className="flex items-center gap-2">
-            <Target className="w-5 h-5 text-blue-600" />
+            {/* Removed Target icon */}
             <span className="font-semibold text-blue-800">Epics</span>
           </div>
           <div className="text-2xl font-bold text-blue-900">{counts.epics}</div>
@@ -1110,7 +1112,7 @@ function BacklogStats({ backlog }) {
         </div>
         <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
           <div className="flex items-center gap-2">
-            <Users className="w-5 h-5 text-purple-600" />
+            {/* Removed Users icon */}
             <span className="font-semibold text-purple-800">User Stories</span>
           </div>
           <div className="text-2xl font-bold text-purple-900">{counts.stories}</div>
@@ -1210,7 +1212,7 @@ function ProgressTracker({ currentStep, totalSteps, stepNames }) {
   return (
     <div className="bg-white rounded-lg shadow-lg border p-6 mb-6">
       <h3 className="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
-        <Activity className="w-5 h-5" />
+  {/* Removed Activity icon */}
         Analysis Progress
       </h3>
       <div className="space-y-4">
@@ -1255,7 +1257,7 @@ function CollaborationPanel({ notifications, messages }) {
         onClick={() => setIsOpen(!isOpen)}
         className="bg-blue-600 text-white p-3 rounded-full shadow-lg hover:bg-blue-700 transition-colors"
       >
-        <Bell className="w-6 h-6" />
+  {/* Removed Bell icon */}
       </button>
       
       {isOpen && (
@@ -1339,7 +1341,7 @@ function BacklogCards({ backlog }) {
             <div className="flex items-center gap-2 mb-2">
               {item.children && item.children.length > 0 ? (
                 <button onClick={() => toggle(item.id)} className="focus:outline-none">
-                  {expanded[item.id] ? <ChevronDown className="w-4 h-4 text-blue-500" /> : <ChevronRight className="w-4 h-4 text-gray-500" />}
+                  {/* Removed ChevronDown/ChevronRight icons */}
                 </button>
               ) : <span className="w-4 h-4" />}
               <span className={`font-semibold w-20 text-center text-xs py-1 rounded-full ${
@@ -1415,7 +1417,7 @@ const Sidebar = ({
         <div className="p-4 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50">
         <div className="flex items-center gap-3">
             <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-              <FileText className="w-5 h-5 text-white" />
+              {/* Removed FileText icon */}
           </div>
             <h1 className="text-lg font-bold text-gray-900">BA Agent Pro</h1>
         </div>
@@ -1430,7 +1432,7 @@ const Sidebar = ({
               onClick={() => setShowLOBSelector(!showLOBSelector)}
               className="text-blue-600 hover:text-blue-700"
             >
-              {showLOBSelector ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+              {/* Removed ChevronUp/ChevronDown icons */}
             </button>
           </div>
           
@@ -1474,7 +1476,7 @@ const Sidebar = ({
               onClick={() => setShowTagSelector(!showTagSelector)}
               className="text-blue-600 hover:text-blue-700"
             >
-              {showTagSelector ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+              {/* Removed ChevronUp/ChevronDown icons */}
             </button>
           </div>
           
@@ -1576,7 +1578,7 @@ const Sidebar = ({
               : 'text-gray-700 hover:bg-gray-50 hover:shadow-sm'
           }`}
         >
-          <Plus className="w-4 h-4" />
+          {/* Removed Plus icon */}
           <span className="font-medium text-sm">New Analysis</span>
         </button>
         
@@ -1588,7 +1590,7 @@ const Sidebar = ({
               : 'text-gray-700 hover:bg-gray-50 hover:shadow-sm'
           }`}
         >
-          <Folder className="w-4 h-4" />
+          {/* Removed Folder icon */}
             <span className="font-medium text-sm">
               Documents ({filteredDocuments.length})
             </span>
@@ -1602,7 +1604,7 @@ const Sidebar = ({
               : 'text-gray-700 hover:bg-gray-50 hover:shadow-sm'
           }`}
         >
-          <Clock className="w-4 h-4" />
+          {/* Removed Clock icon */}
             <span className="font-medium text-sm">
               Past Analyses ({filteredAnalyses.length})
             </span>
@@ -1619,7 +1621,7 @@ const Sidebar = ({
               : 'text-gray-700 hover:bg-gray-50 hover:shadow-sm'
           }`}
         >
-          <Settings className="w-4 h-4" />
+          {/* Removed Settings icon */}
           <span className="font-medium text-sm">Admin Portal</span>
         </button>
         
@@ -1627,7 +1629,7 @@ const Sidebar = ({
           onClick={onLogout}
           className="w-full p-3 rounded-xl flex items-center gap-3 transition-all duration-200 text-red-600 hover:bg-red-50 hover:shadow-sm border border-transparent hover:border-red-200"
         >
-          <LogOut className="w-4 h-4" />
+          {/* Removed LogOut icon */}
           <span className="font-medium text-sm">Logout</span>
         </button>
       </div>
@@ -1640,11 +1642,11 @@ const Sidebar = ({
 const BreadcrumbNavigation = ({ activeSection, selectedLOB, projectTags, lobCategories }) => {
   const getSectionIcon = (section) => {
     switch (section) {
-      case 'upload': return <UploadCloud className="w-4 h-4" />;
-      case 'documents': return <Folder className="w-4 h-4" />;
-      case 'analyses': return <Clock className="w-4 h-4" />;
-      case 'capabilities': return <Settings className="w-4 h-4" />;
-      default: return <Activity className="w-4 h-4" />;
+  case 'upload': return null;
+  case 'documents': return null;
+  case 'analyses': return null;
+  case 'capabilities': return null;
+  default: return null;
     }
   };
 
@@ -1662,10 +1664,10 @@ const BreadcrumbNavigation = ({ activeSection, selectedLOB, projectTags, lobCate
     <div className="mb-6 p-4 bg-white rounded-xl shadow-sm border border-gray-200">
       <div className="flex items-center gap-2 text-sm text-gray-600">
         <span className="flex items-center gap-1">
-          <Target className="w-4 h-4 text-blue-600" />
+          {/* Removed Target icon */}
           <span className="font-medium">BA Agent Pro</span>
         </span>
-        <ChevronRight className="w-4 h-4" />
+  {/* Removed ChevronRight icon */}
         <span className="flex items-center gap-1">
           {getSectionIcon(activeSection)}
           <span className="font-medium">{getSectionName(activeSection)}</span>
@@ -1673,7 +1675,7 @@ const BreadcrumbNavigation = ({ activeSection, selectedLOB, projectTags, lobCate
         
         {selectedLOB !== 'all' && (
           <>
-            <ChevronRight className="w-4 h-4" />
+            {/* Removed ChevronRight icon */}
             <span className="flex items-center gap-1">
               <span className="text-lg">
                 {lobCategories.find(lob => lob.id === selectedLOB)?.icon}
@@ -1687,7 +1689,7 @@ const BreadcrumbNavigation = ({ activeSection, selectedLOB, projectTags, lobCate
         
         {projectTags.length > 0 && (
           <>
-            <ChevronRight className="w-4 h-4" />
+            {/* Removed ChevronRight icon */}
             <div className="flex items-center gap-1">
               <span className="font-medium">Tags:</span>
               <div className="flex gap-1">
@@ -1724,7 +1726,7 @@ const QuickStats = ({ documents, analyses, selectedLOB, projectTags, lobCategori
       >
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center group-hover:bg-blue-200 transition-colors">
-            <Folder className="w-5 h-5 text-blue-600" />
+            {/* Removed Folder icon */}
           </div>
           <div>
             <p className="text-sm text-gray-600">Documents</p>
@@ -1733,7 +1735,7 @@ const QuickStats = ({ documents, analyses, selectedLOB, projectTags, lobCategori
         </div>
         <div className="mt-2 flex items-center text-xs text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity">
           <span>Click to view documents</span>
-          <ArrowRight className="w-3 h-3 ml-1" />
+          {/* Removed ArrowRight icon */}
         </div>
       </div>
       
@@ -1744,7 +1746,7 @@ const QuickStats = ({ documents, analyses, selectedLOB, projectTags, lobCategori
       >
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center group-hover:bg-green-200 transition-colors">
-            <Clock className="w-5 h-5 text-green-600" />
+            {/* Removed Clock icon */}
           </div>
           <div>
             <p className="text-sm text-gray-600">Analyses</p>
@@ -1753,7 +1755,7 @@ const QuickStats = ({ documents, analyses, selectedLOB, projectTags, lobCategori
         </div>
         <div className="mt-2 flex items-center text-xs text-green-600 opacity-0 group-hover:opacity-100 transition-opacity">
           <span>Click to view analyses</span>
-          <ArrowRight className="w-3 h-3 ml-1" />
+          {/* Removed ArrowRight icon */}
         </div>
       </div>
       
@@ -1774,7 +1776,7 @@ const QuickStats = ({ documents, analyses, selectedLOB, projectTags, lobCategori
       <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
-            <Link className="w-5 h-5 text-orange-600" />
+            {/* Removed Link icon */}
           </div>
           <div>
             <p className="text-sm text-gray-600">Active Tags</p>
@@ -1803,7 +1805,7 @@ const SearchAndFilterBar = ({
         {/* Search Bar */}
         <div className="flex-1 min-w-0">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+            {/* Removed Search icon */}
             <input
               type="text"
               placeholder="Search by document name, content, tags, LOB, file type, or status..."
@@ -1816,7 +1818,7 @@ const SearchAndFilterBar = ({
                 onClick={() => setSearchQuery('')}
                 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
               >
-                <XCircle className="w-4 h-4" />
+                {/* Removed XCircle icon */}
               </button>
             )}
           </div>
@@ -1842,7 +1844,7 @@ const SearchAndFilterBar = ({
             className="p-2 border border-gray-300 rounded-lg hover:bg-gray-50"
             title={`Sort ${sortOrder === 'asc' ? 'Descending' : 'Ascending'}`}
           >
-            {sortOrder === 'asc' ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+            {/* Removed ChevronUp/ChevronDown icons */}
           </button>
 
           {/* View Mode Toggle */}
