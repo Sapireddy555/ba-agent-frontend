@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import { AlertCircle } from 'lucide-react';
-import { 
-  Globe, Languages, CheckCircle, AlertCircle, 
-  Download, Upload, FileText, Settings, 
-  ChevronDown, ChevronUp, Eye, EyeOff
-} from 'lucide-react';
+// Removed all lucide-react imports
+// import React, { useState, useEffect } from 'react';
+// import { AlertCircle } from 'lucide-react';
+// import { 
+//   Globe, Languages, CheckCircle, AlertCircle, 
+//   Download, Upload, FileText, Settings, 
+//   ChevronDown, ChevronUp, Eye, EyeOff
+// } from 'lucide-react';
 
 const MultiLanguageSupport = ({ 
   document,

@@ -4,7 +4,7 @@ import {
   AlertTriangle, Info, Target, Users, Zap, Shield, Database,
   ArrowRight, Copy, Download, Eye, Edit3, Save, X, FileEdit,
   Upload, Download as DownloadIcon
-} from 'lucide-react';
+// Removed all lucide-react imports
 
 const EditableTRDFormatter = ({ 
   content, 

@@ -3,7 +3,7 @@ import {
   FileText, ChevronDown, ChevronRight, Hash, CheckCircle, 
   AlertTriangle, Info, Target, Users, Zap, Shield, Database,
   ArrowRight, Copy, Download, Eye
-} from 'lucide-react';
+// Removed all lucide-react imports
 
 const ProfessionalTRDFormatter = ({ content, title = "Technical Requirements Document" }) => {
   const [expandedSections, setExpandedSections] = useState({});

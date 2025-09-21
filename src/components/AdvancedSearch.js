@@ -3,7 +3,7 @@ import {
   Search, Filter, X, Calendar, Tag, User, FileText, 
   ChevronDown, ChevronUp, SortAsc, SortDesc, Clock,
   CheckCircle, AlertCircle, Eye, EyeOff
-} from 'lucide-react';
+// Removed all lucide-react imports
 
 const AdvancedSearch = ({ 
   documents = [], 

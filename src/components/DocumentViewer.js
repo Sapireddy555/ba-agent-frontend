@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { 
   FileText, FileImage, FilePdf, FileWord, FileCode, 
   Download, Eye, X, ChevronLeft, ChevronRight, ZoomIn, ZoomOut
-} from 'lucide-react';
+// Removed all lucide-react imports
 
 const DocumentViewer = ({ documents = [], onDownload, title = "Uploaded Documents" }) => {
   const [selectedDocument, setSelectedDocument] = useState(null);

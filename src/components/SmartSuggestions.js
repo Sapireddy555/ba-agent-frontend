@@ -1,11 +1,12 @@
+// Removed all lucide-react imports
 import React, { useState, useEffect } from 'react';
-import { Lightbulb, CheckCircle, XCircle } from 'lucide-react';
-import { 
-  Lightbulb, CheckCircle, XCircle, AlertTriangle, 
-  FileText, Target, Users, Clock, TrendingUp,
-  ChevronDown, ChevronUp, RefreshCw, Star,
-  MessageSquare, ThumbsUp, ThumbsDown, BookOpen
-} from 'lucide-react';
+// import { Lightbulb, CheckCircle, XCircle } from 'lucide-react';
+// import { 
+//   Lightbulb, CheckCircle, XCircle, AlertTriangle, 
+//   FileText, Target, Users, Clock, TrendingUp,
+//   ChevronDown, ChevronUp, RefreshCw, Star,
+//   MessageSquare, ThumbsUp, ThumbsDown, BookOpen
+// } from 'lucide-react';
 
 const SmartSuggestions = ({ 
   document, 
@@ -135,7 +136,7 @@ const SmartSuggestions = ({
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
           <div className="p-2 bg-yellow-100 rounded-lg">
-            <Lightbulb className="w-5 h-5 text-yellow-600" />
+          {/* <Lightbulb className="w-5 h-5 text-yellow-600" /> */}
           </div>
           <div>
             <h3 className="text-lg font-semibold text-gray-900">Smart Suggestions</h3>

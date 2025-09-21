@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Menu, X, ChevronLeft, ChevronRight, Search, Bell, User } from 'lucide-react';
+// Removed all lucide-react imports
 
 const ResponsiveLayout = ({ 
   children, 
