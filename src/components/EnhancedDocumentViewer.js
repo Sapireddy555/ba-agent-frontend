@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { 
-  FileText, FileImage, FilePdf, FileWord, FileCode, 
+  FileText, FileImage, File, FileType, 
   Download, Eye, X, ChevronLeft, ChevronRight, ZoomIn, ZoomOut,
-  RotateCw, RotateCcw, Maximize2, Minimize2, Search, Filter,
+  RotateCw, RotateCcw, Maximize2, Minimize, Search, Filter,
   Calendar, User, Tag, Clock, FileCheck, AlertCircle
 } from 'lucide-react';
 
@@ -32,10 +32,10 @@ const EnhancedDocumentViewer = ({
     const ext = filename.toLowerCase().split('.').pop();
     switch (ext) {
       case 'pdf':
-        return FilePdf;
+        return File;
       case 'doc':
       case 'docx':
-        return FileWord;
+        return FileType;
       case 'jpg':
       case 'jpeg':
       case 'png':
@@ -56,7 +56,7 @@ const EnhancedDocumentViewer = ({
       case 'ts':
       case 'jsx':
       case 'tsx':
-        return FileCode;
+        return FileType;
       case 'xlsx':
       case 'xls':
         return FileCheck;
@@ -368,7 +368,7 @@ const EnhancedDocumentViewer = ({
         return (
           <div className="flex items-center justify-center h-full text-center bg-gray-50">
             <div className="p-8 max-w-md">
-              <FileWord className="w-24 h-24 text-blue-600 mx-auto mb-4" />
+              <FileType className="w-24 h-24 text-blue-600 mx-auto mb-4" />
               <h3 className="text-xl font-semibold text-gray-900 mb-2">
                 {document.filename || document.name}
               </h3>
@@ -713,7 +713,7 @@ const EnhancedDocumentViewer = ({
                           className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
                           title="Reset View"
                         >
-                          <Minimize2 className="w-4 h-4" />
+                          <Minimize className="w-4 h-4" />
                         </button>
                       </>
                     )}
@@ -746,7 +746,7 @@ const EnhancedDocumentViewer = ({
                         className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
                         title={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
                       >
-                        {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+                        {isFullscreen ? <Minimize className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
                       </button>
                     )}
                     

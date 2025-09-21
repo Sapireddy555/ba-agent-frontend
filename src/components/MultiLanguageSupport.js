@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  Globe, Languages, CheckCircle, AlertCircle, 
+  Globe, CheckCircle, AlertCircle, 
   Download, Upload, FileText, Settings, 
   ChevronDown, ChevronUp, Eye, EyeOff
 } from 'lucide-react';

@@ -38,8 +38,8 @@ import {
   Link, 
   Search, 
   X, 
-  ListCollapse, 
-  SendIcon, 
+  List, 
+  Send, 
   Eye, 
   Copy, 
   Menu, 
@@ -2107,12 +2107,12 @@ const Capabilities = () => (
         <div className="text-gray-500 text-sm text-center">Extracts key text from your documents.</div>
       </div>
       <div className="bg-white rounded-xl shadow p-6 flex flex-col items-center">
-        <ListCollapse className="w-8 h-8 text-blue-500 mb-2" />
+        <List className="w-8 h-8 text-blue-500 mb-2" />
         <div className="font-bold text-gray-800 mb-1">Automated TRD</div>
         <div className="text-gray-500 text-sm text-center">Generates Technical Requirements Document.</div>
       </div>
       <div className="bg-white rounded-xl shadow p-6 flex flex-col items-center">
-        <SendIcon className="w-8 h-8 text-blue-500 mb-2" />
+        <Send className="w-8 h-8 text-blue-500 mb-2" />
         <div className="font-bold text-gray-800 mb-1">Seamless Integration</div>
         <div className="text-gray-500 text-sm text-center">Streamlines TRD approval and DevOps sync.</div>
       </div>
@@ -2335,7 +2335,7 @@ const PastAnalysesSection = ({ pastAnalyses, selectedAnalysis, setSelectedAnalys
                       )}
                       {selectedAnalysis.results.backlog && (
                         <div className="flex items-center gap-2 text-sm">
-                          <ListCollapse className="w-4 h-4 text-purple-500" />
+                          <List className="w-4 h-4 text-purple-500" />
                           <span>Project Backlog</span>
                         </div>
                       )}
@@ -3082,7 +3082,7 @@ function MainApp() {
         <Target key="planning" className="w-5 h-5" />,
         <FileText key="tech" className="w-5 h-5" />,
         <BarChart3 key="diagram" className="w-5 h-5" />,
-        <ListCollapse key="backlog" className="w-5 h-5" />,
+        <List key="backlog" className="w-5 h-5" />,
         <CheckCircle key="final" className="w-5 h-5" />
       ];
       return icons[stepIndex] || <Activity key="default" className="w-5 h-5" />;
@@ -3263,7 +3263,7 @@ function MainApp() {
     const tabs = [
       { id: 'trd', label: 'Technical Requirements', icon: FileText },
       { id: 'diagrams', label: 'Diagrams', icon: BarChart3 },
-      { id: 'backlog', label: 'Project Backlog', icon: ListCollapse },
+      { id: 'backlog', label: 'Project Backlog', icon: List },
       { id: 'azure-devops', label: 'Azure DevOps', icon: Settings }
     ];
 
@@ -3962,7 +3962,7 @@ function MainApp() {
                           </>
                         ) : (
                           <>
-                            <SendIcon className="w-5 h-5" />
+                            <Send className="w-5 h-5" />
                             Analyze Document
                           </>
                         )}
@@ -4020,7 +4020,7 @@ function MainApp() {
                               : 'bg-gray-400 text-gray-200 cursor-not-allowed'
                           }`}
                         >
-                          <SendIcon className="w-4 h-4" />
+                          <Send className="w-4 h-4" />
                           {approvalReady ? 'Send for Approval' : 'Approval Pending'}
                         </button>
                       </div>
