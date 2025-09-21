@@ -13,7 +13,7 @@ import ReactFlow, {
   getTransformForBounds,
 } from 'reactflow';
 import { toPng } from 'html-to-image';
-// Removed all lucide-react imports
+import { Download, ZoomIn, ZoomOut, Maximize2, RotateCcw } from 'lucide-react';
 
 import 'reactflow/dist/style.css';
 

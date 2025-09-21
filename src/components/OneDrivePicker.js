@@ -10,7 +10,7 @@ import {
   ChevronDown,
   Home,
   Search
-// Removed all lucide-react imports
+} from 'lucide-react';
 
 const OneDrivePicker = ({ 
   onFileSelect, 

@@ -1,12 +1,10 @@
-// Removed all lucide-react imports
 import React, { useState, useEffect } from 'react';
-// import { Lightbulb, CheckCircle, XCircle } from 'lucide-react';
-// import { 
-//   Lightbulb, CheckCircle, XCircle, AlertTriangle, 
-//   FileText, Target, Users, Clock, TrendingUp,
-//   ChevronDown, ChevronUp, RefreshCw, Star,
-//   MessageSquare, ThumbsUp, ThumbsDown, BookOpen
-// } from 'lucide-react';
+import { 
+  Lightbulb, CheckCircle, XCircle, AlertTriangle, 
+  FileText, Target, Users, Clock, TrendingUp,
+  ChevronDown, ChevronUp, RefreshCw, Star,
+  MessageSquare, ThumbsUp, ThumbsDown, BookOpen
+} from 'lucide-react';
 
 const SmartSuggestions = ({ 
   document, 

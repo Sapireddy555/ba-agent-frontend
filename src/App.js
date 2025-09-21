@@ -13,6 +13,48 @@ import ResponsiveLayout, { ResponsiveGrid, ResponsiveCard, ResponsiveButton, Res
 import SmartSuggestions from './components/SmartSuggestions';
 import RealTimeComments from './components/RealTimeComments';
 import MultiLanguageSupport from './components/MultiLanguageSupport';
+import { 
+  CheckCircle, 
+  XCircle, 
+  AlertTriangle, 
+  FileText, 
+  BarChart3, 
+  Download, 
+  Target, 
+  Zap, 
+  Users, 
+  Activity, 
+  Bell, 
+  ChevronDown, 
+  ChevronRight, 
+  ChevronUp, 
+  Plus, 
+  Folder, 
+  Clock, 
+  Settings, 
+  LogOut, 
+  UploadCloud, 
+  ArrowRight, 
+  Link, 
+  Search, 
+  X, 
+  ListCollapse, 
+  SendIcon, 
+  Eye, 
+  Copy, 
+  Menu, 
+  Cloud, 
+  User, 
+  RefreshCw, 
+  ThumbsUp, 
+  ThumbsDown, 
+  ZoomIn, 
+  ZoomOut, 
+  Maximize2, 
+  RotateCcw, 
+  Globe, 
+  AlertCircle 
+} from 'lucide-react';
 
 // API base URL - use environment variable or fallback to localhost
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://127.0.0.1:5000';

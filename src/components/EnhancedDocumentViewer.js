@@ -4,7 +4,7 @@ import {
   Download, Eye, X, ChevronLeft, ChevronRight, ZoomIn, ZoomOut,
   RotateCw, RotateCcw, Maximize2, Minimize2, Search, Filter,
   Calendar, User, Tag, Clock, FileCheck, AlertCircle
-// Removed all lucide-react imports
+} from 'lucide-react';
 
 const EnhancedDocumentViewer = ({ 
   documents = [], 

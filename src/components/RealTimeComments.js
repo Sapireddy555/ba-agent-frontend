@@ -3,7 +3,7 @@ import {
   MessageSquare, Send, MoreVertical, Edit3, Trash2, 
   Reply, ThumbsUp, ThumbsDown, Flag, User, Clock,
   CheckCircle, AlertCircle, Eye, EyeOff, Lock, Unlock
-// Removed all lucide-react imports
+} from 'lucide-react';
 
 const RealTimeComments = ({ 
   documentId,
