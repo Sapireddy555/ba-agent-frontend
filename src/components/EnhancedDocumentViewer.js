@@ -25,6 +25,7 @@ const EnhancedDocumentViewer = ({
   const [sortOrder, setSortOrder] = useState('desc');
   const [thumbnails, setThumbnails] = useState({});
   const [loadingThumbnails, setLoadingThumbnails] = useState(new Set());
+  const [showThumbnailsView, setShowThumbnails] = useState(showThumbnails);
   const canvasRef = useRef(null);
 
   // Enhanced file type detection
@@ -173,7 +174,7 @@ const EnhancedDocumentViewer = ({
 
   // Generate thumbnail for images
   const generateThumbnail = async (document) => {
-    if (!showThumbnails || !document.url) return;
+    if (!showThumbnailsView || !document.url) return;
     
     const ext = (document.filename || document.name || '').toLowerCase().split('.').pop();
     if (!['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg'].includes(ext)) return;
@@ -429,11 +430,11 @@ const EnhancedDocumentViewer = ({
   // Generate thumbnails on component mount
   useEffect(() => {
     documents.forEach(doc => {
-      if (showThumbnails && !thumbnails[doc.id || doc.filename]) {
+      if (showThumbnailsView && !thumbnails[doc.id || doc.filename]) {
         generateThumbnail(doc);
       }
     });
-  }, [documents, showThumbnails]);
+  }, [documents, showThumbnailsView]);
 
   const filteredDocuments = getFilteredAndSortedDocuments();
 
@@ -465,14 +466,14 @@ const EnhancedDocumentViewer = ({
             <div className="flex items-center gap-2">
               <span className="text-sm text-gray-500">View:</span>
               <button
-                onClick={() => setShowThumbnails(!showThumbnails)}
+                onClick={() => setShowThumbnails(!showThumbnailsView)}
                 className={`px-3 py-1 rounded-md text-sm transition-colors ${
-                  showThumbnails 
+                  showThumbnailsView 
                     ? 'bg-blue-100 text-blue-700' 
                     : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                 }`}
               >
-                {showThumbnails ? 'Thumbnails' : 'List'}
+                {showThumbnailsView ? 'Thumbnails' : 'List'}
               </button>
             </div>
           </div>
@@ -526,7 +527,7 @@ const EnhancedDocumentViewer = ({
 
         {/* Document Grid/List */}
         <div className="p-6">
-          {showThumbnails ? (
+          {showThumbnailsView ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               {filteredDocuments.map((document, index) => {
                 const Icon = getFileIcon(document.filename || document.name);
