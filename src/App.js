@@ -1,4 +1,15 @@
 import React, { useRef, useState, useEffect } from 'react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import LoginPage from './LoginPage';
+import JSZip from 'jszip';
+import SmartSuggestions from './components/SmartSuggestions';
+import RealTimeComments from './components/RealTimeComments';
+import MultiLanguageSupport from './components/MultiLanguageSupport';
+import AdvancedSearch from './components/AdvancedSearch';
+import EnhancedDocumentViewer from './components/EnhancedDocumentViewer';
+import OneDrivePicker from './components/OneDrivePicker';
+import { Cloud, User } from 'lucide-react';
 import { CheckCircle, XCircle, AlertTriangle, FileText, BarChart3, Download, Target, Zap, Users, Activity, Bell, ChevronDown, ChevronRight, ChevronUp, Plus, Folder, Clock, Settings, LogOut, UploadCloud, ArrowRight, Link, Search, X, List, Send, Eye, Copy } from 'lucide-react';
 
 // API base URL - use environment variable or fallback to localhost
@@ -52,24 +63,19 @@ function OneDriveStatusIndicator() {
       const response = await fetch('/api/integrations/onedrive/status');
       if (response.status === 401) {
         setStatus('not_authenticated');
-        setMessage('Please log in to check OneDrive status');
         return;
       }
       
       const data = await response.json();
       if (data.configured === false) {
         setStatus('not_configured');
-        setMessage('OneDrive not configured');
       } else if (data.user_connected) {
         setStatus('connected');
-        setMessage('Connected to OneDrive');
       } else {
         setStatus('not_connected');
-        setMessage('Not connected to OneDrive');
       }
     } catch (error) {
       setStatus('error');
-      setMessage('Failed to check status');
     }
   };
 
