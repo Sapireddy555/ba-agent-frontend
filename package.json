@@ -60,7 +60,7 @@
   },
   "jest": {
     "transformIgnorePatterns": [
-  "node_modules/(?!(react-markdown|remark-.*|rehype-.*|unified|bail|is-plain-obj|trough|vfile.*|unist-.*|mdast-.*|micromark.*|parse-entities|character-entities.*|character-reference-invalid|is-alphanumerical|is-decimal|is-hexadecimal|space-separated-tokens|comma-separated-tokens|hast-.*|property-information|hastscript|web-namespaces|zwitch|html-void-elements|ccount|escape-string-regexp|markdown-table|trim-trailing-lines|longest-streak|devlop|estree-util-is-identifier-name)/)"
+  "node_modules/(?!(react-markdown|remark-.*|rehype-.*|unified|bail|is-plain-obj|trough|vfile.*|unist-.*|mdast-.*|micromark.*|parse-entities|character-entities.*|character-reference-invalid|is-alphanumerical|is-decimal|is-hexadecimal|space-separated-tokens|comma-separated-tokens|hast-.*|property-information|hastscript|web-namespaces|zwitch|html-void-elements|ccount|escape-string-regexp|markdown-table|trim-trailing-lines|longest-streak|devlop|estree-util-is-identifier-name|html-url-attributes)/)"
     ]
   }
 }
