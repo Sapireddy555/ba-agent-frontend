@@ -3,6 +3,9 @@
 
 name: Build and deploy Node.js app to Azure Web App - ba-agent-frontend
 
+env:
+  CI: false
+
 on:
   push:
     branches:
@@ -62,4 +65,5 @@ jobs:
           app-name: 'ba-agent-frontend'
           slot-name: 'Production'
           package: .
+
           
