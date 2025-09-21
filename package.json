@@ -30,7 +30,8 @@
   "scripts": {
     "start": "react-scripts start --fast-refresh",
     "build": "react-scripts build",
-    "test": "react-scripts test",
+    "test": "CI=false react-scripts test",
+    "test:ci": "CI=false react-scripts test --coverage --no-watch --no-interactive",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {
@@ -59,7 +60,8 @@
   },
   "jest": {
     "transformIgnorePatterns": [
-      "node_modules/(?!(react-markdown|remark-gfm|remark-parse|remark-rehype|rehype-parse|rehype-stringify|unified|bail|is-plain-obj|trough|vfile|vfile-message|unist-util-stringify-position|mdast-util-from-markdown|mdast-util-to-markdown|micromark|parse-entities|character-entities|character-entities-legacy|character-reference-invalid|is-alphanumerical|is-decimal|is-hexadecimal|mdast-util-to-string|unist-util-visit|unist-util-visit-parents|unist-util-is|mdast-util-definitions|space-separated-tokens|comma-separated-tokens|hast-util-whitespace|property-information|hast-util-parse-selector|hastscript|web-namespaces|zwitch|html-void-elements|ccount|escape-string-regexp|markdown-table|mdast-util-compact|trim-trailing-lines|mdast-util-find-and-replace|longest-streak|mdast-util-to-hast|mdast-util-gfm|mdast-util-gfm-table|mdast-util-gfm-strikethrough|mdast-util-gfm-task-list-item|mdast-util-gfm-autolink-literal|micromark-extension-gfm|micromark-extension-gfm-table|micromark-extension-gfm-strikethrough|micromark-extension-gfm-task-list-item|micromark-extension-gfm-autolink-literal|micromark-util-combine-extensions)/)"
-    ]
+      "node_modules/(?!(react-markdown|remark-gfm|remark-parse|remark-rehype|rehype-parse|rehype-stringify|unified|bail|is-plain-obj|trough|vfile|vfile-message|unist-util-stringify-position|mdast-util-from-markdown|mdast-util-to-markdown|micromark|parse-entities|character-entities|character-entities-legacy|character-reference-invalid|is-alphanumerical|is-decimal|is-hexadecimal|mdast-util-to-string|unist-util-visit|unist-util-visit-parents|unist-util-is|mdast-util-definitions|space-separated-tokens|comma-separated-tokens|hast-util-whitespace|property-information|hast-util-parse-selector|hastscript|web-namespaces|zwitch|html-void-elements|ccount|escape-string-regexp|markdown-table|mdast-util-compact|trim-trailing-lines|mdast-util-find-and-replace|longest-streak|mdast-util-to-hast|mdast-util-gfm|mdast-util-gfm-table|mdast-util-gfm-strikethrough|mdast-util-gfm-task-list-item|mdast-util-gfm-autolink-literal|micromark-extension-gfm|micromark-extension-gfm-table|micromark-extension-gfm-strikethrough|micromark-extension-gfm-task-list-item|micromark-extension-gfm-autolink-literal|micromark-util-combine-extensions|devlop)/)"
+    ],
+    "testEnvironment": "jsdom"
   }
 }
