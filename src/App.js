@@ -1,12 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { ArrowRight } from 'lucide-react';
 import { createPortal } from 'react-dom';
-import { 
-    UploadCloud, FileText, ListCollapse, Folder, Clock, Settings, CheckCircle, XCircle, 
-    ChevronDown, ChevronUp, ChevronRight, Search, Send as SendIcon, Copy, AlertTriangle,
-    TrendingUp, Users, Activity, BarChart3, Target, Zap, Eye, Download,
-    Bell, User, Calendar, PieChart, ArrowRight, ArrowLeft, Menu, Plus, Link, LogOut, Cloud, X
-} from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import JSZip from 'jszip';
