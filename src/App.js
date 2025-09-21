@@ -1,60 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { createPortal } from 'react-dom';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import JSZip from 'jszip';
-import LoginPage from './LoginPage';
-import ReactFlowDiagram from './components/ReactFlowDiagram';
-import { generateSystemArchitectureDiagram, generateDatabaseDiagram, generateUserFlowDiagram } from './utils/diagramGenerator';
-import OneDrivePicker from './components/OneDrivePicker';
-import EnhancedDocumentViewer from './components/EnhancedDocumentViewer';
-import AdvancedSearch from './components/AdvancedSearch';
-import ResponsiveLayout, { ResponsiveGrid, ResponsiveCard, ResponsiveButton, ResponsiveModal } from './components/ResponsiveLayout';
-import SmartSuggestions from './components/SmartSuggestions';
-import RealTimeComments from './components/RealTimeComments';
-import MultiLanguageSupport from './components/MultiLanguageSupport';
-import { 
-  CheckCircle, 
-  XCircle, 
-  AlertTriangle, 
-  FileText, 
-  BarChart3, 
-  Download, 
-  Target, 
-  Zap, 
-  Users, 
-  Activity, 
-  Bell, 
-  ChevronDown, 
-  ChevronRight, 
-  ChevronUp, 
-  Plus, 
-  Folder, 
-  Clock, 
-  Settings, 
-  LogOut, 
-  UploadCloud, 
-  ArrowRight, 
-  Link, 
-  Search, 
-  X, 
-  List, 
-  Send, 
-  Eye, 
-  Copy, 
-  Menu, 
-  Cloud, 
-  User, 
-  RefreshCw, 
-  ThumbsUp, 
-  ThumbsDown, 
-  ZoomIn, 
-  ZoomOut, 
-  Maximize2, 
-  RotateCcw, 
-  Globe, 
-  AlertCircle 
-} from 'lucide-react';
+import { CheckCircle, XCircle, AlertTriangle, FileText, BarChart3, Download, Target, Zap, Users, Activity, Bell, ChevronDown, ChevronRight, ChevronUp, Plus, Folder, Clock, Settings, LogOut, UploadCloud, ArrowRight, Link, Search, X, List, Send, Eye, Copy } from 'lucide-react';
 
 // API base URL - use environment variable or fallback to localhost
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://127.0.0.1:5000';
@@ -100,7 +45,7 @@ class ErrorBoundary extends React.Component {
 
 function OneDriveStatusIndicator() {
   const [status, setStatus] = useState('checking');
-  const [message, setMessage] = useState('');
+  // Removed unused message state
 
   const checkStatus = async () => {
     try {
@@ -2571,8 +2516,8 @@ function MainApp() {
           bValue = (b.tags || []).length;
           break;
         default:
-          aValue = aValue || '';
-          bValue = bValue || '';
+          aValue = '';
+          bValue = '';
       }
       
       if (sortOrder === 'asc') {
