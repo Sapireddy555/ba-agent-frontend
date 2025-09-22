@@ -1,6 +1,5 @@
+import PropTypes from 'prop-types';
 import React, { useRef, useState, useEffect } from 'react';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
 import LoginPage from './LoginPage';
 import JSZip from 'jszip';
 import SmartSuggestions from './components/SmartSuggestions';
@@ -9,8 +8,7 @@ import MultiLanguageSupport from './components/MultiLanguageSupport';
 import AdvancedSearch from './components/AdvancedSearch';
 import EnhancedDocumentViewer from './components/EnhancedDocumentViewer';
 import OneDrivePicker from './components/OneDrivePicker';
-import { Cloud, User } from 'lucide-react';
-import { CheckCircle, XCircle, AlertTriangle, FileText, BarChart3, Download, Target, Zap, Users, Activity, Bell, ChevronDown, ChevronRight, ChevronUp, Plus, Folder, Clock, Settings, LogOut, UploadCloud, ArrowRight, Link, Search, X, List, Send, Eye, Copy } from 'lucide-react';
+import { CheckCircle, XCircle, AlertTriangle, FileText, BarChart3, Download, Target, Zap, Users, Activity, Bell, ChevronDown, ChevronRight, ChevronUp, Plus, Folder, Clock, Settings, LogOut, UploadCloud, ArrowRight, Link, Search, X, List, Send, Eye, Copy, Cloud, User } from 'lucide-react';
 
 // API base URL - use environment variable or fallback to localhost
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://127.0.0.1:5000';
@@ -129,24 +127,28 @@ function OneDriveStatusIndicator() {
     }
   };
 
+  let statusClass = 'text-blue-600';
+  if (status === 'connected') statusClass = 'text-green-600';
+  else if (status === 'not_connected') statusClass = 'text-orange-600';
+  else if (status === 'not_configured') statusClass = 'text-red-600';
+  else if (status === 'not_authenticated' || status === 'error') statusClass = 'text-yellow-600';
+
   return (
     <div className="flex items-center gap-1 text-xs">
       {getStatusIcon()}
-      <span className={`font-medium ${
-        status === 'connected' ? 'text-green-600' : 
-        status === 'not_connected' ? 'text-orange-600' : 
-        status === 'not_configured' ? 'text-red-600' : 
-        status === 'not_authenticated' ? 'text-yellow-600' : 
-        status === 'error' ? 'text-yellow-600' : 'text-blue-600'
-      }`}>
+      <span className={`font-medium ${statusClass}`}>
         {getStatusText()}
       </span>
     </div>
   );
 }
 
-
 function FormattedTextRenderer(props) {
+FormattedTextRenderer.propTypes = {
+  content: PropTypes.string,
+  title: PropTypes.string,
+  className: PropTypes.string
+};
   const { content, title, className = "" } = props;
   const sanitizedContent = content || 'No content generated.';
   
@@ -405,6 +407,13 @@ function FormattedTextRenderer(props) {
 
 // Enhanced Mermaid Diagram with better error handling and loading states
 function MermaidDiagram({ code, id, showDownloadPng, showPngInline, title }) {
+MermaidDiagram.propTypes = {
+  code: PropTypes.string,
+  id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  showDownloadPng: PropTypes.bool,
+  showPngInline: PropTypes.bool,
+  title: PropTypes.string
+};
   const containerRef = useRef(null);
   const [pngUrl, setPngUrl] = useState(null);
   const [loadingPng, setLoadingPng] = useState(false);
@@ -1025,7 +1034,9 @@ function MermaidDiagram({ code, id, showDownloadPng, showPngInline, title }) {
 
 // Enhanced Backlog Stats with better visualization
 function BacklogStats({ backlog }) {
-  const [expanded, setExpanded] = useState({});
+BacklogStats.propTypes = {
+  backlog: PropTypes.array
+};
 
   const countItems = (items) => {
     let epics = 0, features = 0, stories = 0;
@@ -1079,6 +1090,9 @@ function BacklogStats({ backlog }) {
 }
 
 function BacklogBoard({ backlog }) {
+BacklogBoard.propTypes = {
+  backlog: PropTypes.array
+};
   if (!Array.isArray(backlog) || backlog.length === 0) {
     return (
       <div className="p-6 text-center text-gray-500 bg-gray-50 rounded-lg border">
@@ -1167,6 +1181,10 @@ function BacklogBoard({ backlog }) {
 
 // Enhanced Real-time Collaboration Component
 function CollaborationPanel({ notifications, messages }) {
+CollaborationPanel.propTypes = {
+  notifications: PropTypes.array,
+  messages: PropTypes.array
+};
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -1209,7 +1227,8 @@ function BacklogCards({ backlog }) {
   console.log('BacklogCards isArray:', Array.isArray(backlog));
   
   if (Array.isArray(backlog) && backlog.length > 0) {
-  return <div className="bg-blue-50 rounded-lg p-4 shadow-inner">{renderTree(backlog)}</div>;
+    return <div className="bg-blue-50 rounded-lg p-4 shadow-inner">{renderTree(backlog)}</div>;
+  }
 }
 
 const Sidebar = ({ 
@@ -3912,5 +3931,3 @@ function AppWithErrorBoundary() {
 }
 
 export default AppWithErrorBoundary;
-
-}
