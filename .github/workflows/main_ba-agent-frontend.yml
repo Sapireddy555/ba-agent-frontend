@@ -32,7 +32,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: frontend-build
-          path: build
+          path: build/
 
   deploy:
     runs-on: ubuntu-latest
@@ -46,11 +46,12 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: frontend-build
-
+          repository: ba-agent-frontend
+          
       - name: List downloaded files (debug)
         run: |
           ls -la
-          ls -la build/ || echo "No build folder found"
+          ls -la frontend-build/ || echo "No build folder found"
       
       - name: Login to Azure
         uses: azure/login@v2
@@ -64,4 +65,5 @@ jobs:
         uses: azure/webapps-deploy@v3
         with:
           app-name: 'ba-agent-frontend'
-          slot-name: 'production'
+          slot-name: 'Production'
+          package: ./build
