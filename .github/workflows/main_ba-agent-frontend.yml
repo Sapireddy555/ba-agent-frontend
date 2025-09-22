@@ -46,12 +46,11 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: frontend-build
-          repository: ba-agent-frontend
           
       - name: List downloaded files (debug)
         run: |
           ls -la
-          ls -la frontend-build/ || echo "No build folder found"
+          find . -name "*" -type f | head -20
       
       - name: Login to Azure
         uses: azure/login@v2
@@ -66,4 +65,4 @@ jobs:
         with:
           app-name: 'ba-agent-frontend'
           slot-name: 'Production'
-          package: ./build
+          package: .
