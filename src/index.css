@@ -416,136 +416,15 @@ input:focus, textarea:focus, select:focus {
   width: 100%;
   border-collapse: collapse;
   margin: 1em 0;
-  border-radius: 0.5rem;
-  overflow: hidden;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
 }
 
 .prose th, .prose td {
   border: 1px solid #e5e7eb;
-  padding: 0.75em 1em;
+  padding: 0.5em;
   text-align: left;
-  vertical-align: top;
 }
 
 .prose th {
-  background-color: #eff6ff;
-  font-weight: 600;
-  color: #1e40af;
-  font-size: 0.875rem;
-}
-
-.prose td {
-  background-color: #ffffff;
-  color: #374151;
-  font-size: 0.875rem;
-  line-height: 1.5;
-}
-
-.prose tr:hover {
   background-color: #f9fafb;
+  font-weight: 600;
 }
-
-.prose tr:nth-child(even) {
-  background-color: #fafafa;
-}
-
-.prose tr:nth-child(even):hover {
-  background-color: #f3f4f6;
-}
-
-  /* Enhanced UI Components */
-  .sidebar {
-    backdrop-filter: blur(10px);
-    background: rgba(255, 255, 255, 0.95);
-  }
-  
-  .glass-card {
-    backdrop-filter: blur(10px);
-    background: rgba(255, 255, 255, 0.9);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-  }
-  
-  .btn-primary {
-    background: linear-gradient(135deg, var(--color-primary), var(--color-primary-light));
-    color: white;
-    transition: all 0.3s ease;
-  }
-  
-  .btn-primary:hover {
-    background: linear-gradient(135deg, var(--color-primary-dark), var(--color-primary));
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(30, 64, 175, 0.3);
-  }
-  
-  .header {
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.9));
-    backdrop-filter: blur(10px);
-    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-  }
-  
-  /* LOB Category Colors */
-  .lob-personal-auto { background: linear-gradient(135deg, #3b82f6, #60a5fa); }
-  .lob-commercial-auto { background: linear-gradient(135deg, #10b981, #34d399); }
-  .lob-homeowners { background: linear-gradient(135deg, #8b5cf6, #a78bfa); }
-  .lob-property { background: linear-gradient(135deg, #f59e0b, #fbbf24); }
-  .lob-general-liability { background: linear-gradient(135deg, #ef4444, #f87171); }
-  .lob-workers-comp { background: linear-gradient(135deg, #eab308, #facc15); }
-  .lob-cyber { background: linear-gradient(135deg, #6366f1, #818cf8); }
-  .lob-professional-liability { background: linear-gradient(135deg, #ec4899, #f472b6); }
-  .lob-umbrella { background: linear-gradient(135deg, #14b8a6, #5eead4); }
-  .lob-marine { background: linear-gradient(135deg, #06b6d4, #67e8f9); }
-  .lob-aviation { background: linear-gradient(135deg, #f97316, #fb923c); }
-  
-  /* Tag Animations */
-  .tag-enter {
-    animation: tag-enter 0.3s ease-out;
-  }
-  
-  .tag-exit {
-    animation: tag-exit 0.3s ease-in;
-  }
-  
-  @keyframes tag-enter {
-    0% { opacity: 0; transform: scale(0.8) translateY(-10px); }
-    100% { opacity: 1; transform: scale(1) translateY(0); }
-  }
-  
-  @keyframes tag-exit {
-    0% { opacity: 1; transform: scale(1) translateY(0); }
-    100% { opacity: 0; transform: scale(0.8) translateY(-10px); }
-  }
-  
-  /* Enhanced Card Hover Effects */
-  .card-hover {
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-  
-  .card-hover:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-  }
-  
-  /* Sidebar Animation */
-  .sidebar-transition {
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-  
-  /* Stats Card Animation */
-  .stats-card {
-    transition: all 0.3s ease;
-  }
-  
-  .stats-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-  }
-  
-  /* Breadcrumb Animation */
-  .breadcrumb-item {
-    transition: all 0.2s ease;
-  }
-  
-  .breadcrumb-item:hover {
-    transform: translateX(2px);
-  }

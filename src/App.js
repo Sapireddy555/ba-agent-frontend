@@ -1,17 +1,15 @@
-import PropTypes from 'prop-types';
-import React, { useRef, useState, useEffect } from 'react';
-import LoginPage from './LoginPage';
+import React, { useRef, useState, useEffect, useCallback } from 'react';
+import { 
+    UploadCloud, FileText, ListCollapse, Folder, Clock, Settings, CheckCircle, XCircle, 
+    ChevronDown, ChevronUp, ChevronRight, Search, Send as SendIcon, Copy, AlertTriangle,
+    Users, Activity, BarChart3, Target, Zap, Eye, Download,
+    Bell, User, Plus
+} from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
 import JSZip from 'jszip';
-import SmartSuggestions from './components/SmartSuggestions';
-import RealTimeComments from './components/RealTimeComments';
-import MultiLanguageSupport from './components/MultiLanguageSupport';
-import AdvancedSearch from './components/AdvancedSearch';
-import EnhancedDocumentViewer from './components/EnhancedDocumentViewer';
-import OneDrivePicker from './components/OneDrivePicker';
-import { CheckCircle, XCircle, AlertTriangle, FileText, BarChart3, Download, Target, Zap, Users, Activity, Bell, ChevronDown, ChevronRight, ChevronUp, Plus, Folder, Clock, Settings, LogOut, UploadCloud, ArrowRight, Link, Search, X, List, Send, Eye, Copy, Cloud, User } from 'lucide-react';
 
 // API base URL - use environment variable or fallback to localhost
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://127.0.0.1:5000';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://ba-agent-sldc-backend.vercel.app';
 
 // React Error Boundary to catch DOM manipulation errors
 class ErrorBoundary extends React.Component {
@@ -52,368 +50,21 @@ class ErrorBoundary extends React.Component {
 
 // --- Enhanced Helper Components ---
 
-function OneDriveStatusIndicator() {
-  const [status, setStatus] = useState('checking');
-  // Removed unused message state
-
-  const checkStatus = async () => {
-    try {
-      const response = await fetch('/api/integrations/onedrive/status');
-      if (response.status === 401) {
-        setStatus('not_authenticated');
-        return;
-      }
-      
-      const data = await response.json();
-      if (data.configured === false) {
-        setStatus('not_configured');
-      } else if (data.user_connected) {
-        setStatus('connected');
-      } else {
-        setStatus('not_connected');
-      }
-    } catch (error) {
-      setStatus('error');
-    }
-  };
-
-  useEffect(() => {
-    checkStatus();
-    
-    // Listen for refresh events
-    const handleRefresh = () => checkStatus();
-    window.addEventListener('onedrive-status-refresh', handleRefresh);
-    
-    // Check status every 30 seconds
-    const interval = setInterval(checkStatus, 30000);
-    
-    return () => {
-      clearInterval(interval);
-      window.removeEventListener('onedrive-status-refresh', handleRefresh);
-    };
-  }, []);
-
-  const getStatusIcon = () => {
-    switch (status) {
-      case 'connected':
-        return <CheckCircle className="w-4 h-4 text-green-500" />;
-      case 'not_connected':
-        return <XCircle className="w-4 h-4 text-orange-500" />;
-      case 'not_configured':
-        return <XCircle className="w-4 h-4 text-red-500" />;
-      case 'not_authenticated':
-        return <AlertTriangle className="w-4 h-4 text-yellow-500" />;
-      case 'error':
-        return <AlertTriangle className="w-4 h-4 text-yellow-500" />;
-      default:
-        return <div className="w-4 h-4 border-2 border-blue-300 border-t-transparent rounded-full animate-spin"></div>;
-    }
-  };
-
-  const getStatusText = () => {
-    switch (status) {
-      case 'connected':
-        return 'Connected';
-      case 'not_connected':
-        return 'Not Connected';
-      case 'not_configured':
-        return 'Not Configured';
-      case 'not_authenticated':
-        return 'Please Login';
-      case 'error':
-        return 'Error';
-      default:
-        return 'Checking...';
-    }
-  };
-
-  let statusClass = 'text-blue-600';
-  if (status === 'connected') statusClass = 'text-green-600';
-  else if (status === 'not_connected') statusClass = 'text-orange-600';
-  else if (status === 'not_configured') statusClass = 'text-red-600';
-  else if (status === 'not_authenticated' || status === 'error') statusClass = 'text-yellow-600';
-
+function MarkdownRenderer({ markdown, title, className = "" }) {
+  const sanitizedMarkdown = markdown || 'No content generated.';
   return (
-    <div className="flex items-center gap-1 text-xs">
-      {getStatusIcon()}
-      <span className={`font-medium ${statusClass}`}>
-        {getStatusText()}
-      </span>
-    </div>
-  );
-}
-
-function FormattedTextRenderer(props) {
-FormattedTextRenderer.propTypes = {
-  content: PropTypes.string,
-  title: PropTypes.string,
-  className: PropTypes.string
-};
-  const { content, title, className = "" } = props;
-  const sanitizedContent = content || 'No content generated.';
-  
-  // Function to remove compliance section and clean up content
-  const removeComplianceSection = (text) => {
-    // Remove compliance sections (case insensitive)
-    const compliancePatterns = [
-      /## Compliance[\s\S]*?(?=##|$)/gi,
-      /# Compliance[\s\S]*?(?=#|$)/gi,
-      /### Compliance[\s\S]*?(?=###|##|#|$)/gi,
-      /\*\*Compliance\*\*[\s\S]*?(?=\*\*|\n\n|$)/gi,
-      /Compliance Requirements[\s\S]*?(?=\n\n|$)/gi
-    ];
-    
-    let cleanedText = text;
-    compliancePatterns.forEach(pattern => {
-      cleanedText = cleanedText.replace(pattern, '');
-    });
-    
-    return cleanedText;
-  };
-  
-  // Function to aggressively strip ALL markdown symbols and convert to formatted text
-  const formatText = (text) => {
-    // First remove compliance section
-    let cleanedText = removeComplianceSection(text);
-    
-    const lines = cleanedText.split('\n');
-    const formattedLines = [];
-    let skipEmpty = false;
-    
-    for (let line of lines) {
-      // Skip empty lines after headers for better spacing
-      if (!line.trim() && skipEmpty) {
-        skipEmpty = false;
-        continue;
-      }
-      skipEmpty = false;
-      
-      // Handle headers (# ## ### etc.) - convert to styled headings
-      if (line.match(/^#{1,6}\s+/)) {
-        const level = line.match(/^#+/)[0].length;
-        let headerText = line.replace(/^#+\s*/, '').replace(/#+\s*$/, '').trim();
-        
-        // Remove all remaining markdown symbols from header
-        headerText = headerText
-          .replace(/\*\*(.*?)\*\*/g, '$1')  // Bold
-          .replace(/\*(.*?)\*/g, '$1')      // Italic/Bold
-          .replace(/__(.*?)__/g, '$1')      // Bold
-          .replace(/_(.*?)_/g, '$1')        // Italic
-          .replace(/`(.*?)`/g, '$1')        // Code
-          .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1') // Links
-          .replace(/[*#`_~]/g, '')          // Any remaining symbols
-          .trim();
-        
-        if (headerText) {
-          let headerClass = '';
-          
-          switch (level) {
-            case 1: 
-              headerClass = 'text-3xl font-bold text-blue-900 mt-8 mb-6 pb-3 border-b-2 border-blue-200'; 
-              break;
-            case 2: 
-              headerClass = 'text-2xl font-bold text-gray-800 mt-6 mb-4 pb-2 border-b border-gray-200'; 
-              break;
-            case 3: 
-              headerClass = 'text-xl font-semibold text-gray-800 mt-5 mb-3 text-blue-800'; 
-              break;
-            case 4: 
-              headerClass = 'text-lg font-semibold text-gray-700 mt-4 mb-2'; 
-              break;
-            case 5: 
-              headerClass = 'text-base font-semibold text-gray-700 mt-3 mb-2'; 
-              break;
-            default: 
-              headerClass = 'text-sm font-medium text-gray-600 mt-2 mb-1'; 
-              break;
-          }
-          
-          formattedLines.push({
-            type: 'header',
-            content: headerText,
-            className: headerClass,
-            level: level
-          });
-          skipEmpty = true;
-        }
-        continue;
-      }
-      
-      // Handle bullet points (- or * at start)
-      if (line.match(/^\s*[-*+]\s+/)) {
-        let bulletText = line.replace(/^\s*[-*+]\s*/, '').trim();
-        
-        // Clean up markdown symbols from bullet text
-        bulletText = bulletText
-          .replace(/\*\*(.*?)\*\*/g, '$1')  // Bold
-          .replace(/\*(.*?)\*/g, '$1')      // Italic/Bold
-          .replace(/__(.*?)__/g, '$1')      // Bold
-          .replace(/_(.*?)_/g, '$1')        // Italic
-          .replace(/`(.*?)`/g, '$1')        // Code
-          .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1') // Links
-          .replace(/[*#`_~]/g, '')          // Any remaining symbols
-          .trim();
-        
-        if (bulletText) {
-          formattedLines.push({
-            type: 'bullet',
-            content: bulletText,
-            className: 'text-gray-700 ml-6 mb-2'
-          });
-        }
-        continue;
-      }
-      
-      // Handle numbered lists
-      if (line.match(/^\s*\d+\.\s+/)) {
-        let numberedText = line.trim();
-        
-        // Clean up markdown symbols from numbered text
-        numberedText = numberedText
-          .replace(/\*\*(.*?)\*\*/g, '$1')  // Bold
-          .replace(/\*(.*?)\*/g, '$1')      // Italic/Bold
-          .replace(/__(.*?)__/g, '$1')      // Bold
-          .replace(/_(.*?)_/g, '$1')        // Italic
-          .replace(/`(.*?)`/g, '$1')        // Code
-          .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1') // Links
-          .replace(/[*#`_~]/g, '')          // Any remaining symbols
-          .trim();
-        
-        if (numberedText) {
-          formattedLines.push({
-            type: 'numbered',
-            content: numberedText,
-            className: 'text-gray-700 ml-6 mb-2'
-          });
-        }
-        continue;
-      }
-      
-      // Handle regular paragraphs - aggressively clean all markdown
-      let processedLine = line.trim();
-      
-      if (processedLine) {
-        // Remove ALL markdown symbols
-        processedLine = processedLine
-          .replace(/\*\*(.*?)\*\*/g, '$1')      // Bold **text**
-          .replace(/\*(.*?)\*/g, '$1')          // Italic/Bold *text*
-          .replace(/__(.*?)__/g, '$1')          // Bold __text__
-          .replace(/_(.*?)_/g, '$1')            // Italic _text_
-          .replace(/`(.*?)`/g, '$1')            // Inline code `text`
-          .replace(/```[\s\S]*?```/g, '')       // Code blocks
-          .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1') // Links [text](url)
-          .replace(/!\[([^\]]*)\]\([^)]*\)/g, '$1') // Images ![alt](url)
-          .replace(/>\s*/g, '')                 // Blockquotes
-          .replace(/^\s*[-*+]\s*/g, '')         // List markers at start
-          .replace(/^\s*\d+\.\s*/g, '')         // Numbered list markers
-          .replace(/#{1,6}\s*/g, '')            // Header symbols
-          .replace(/[*#`_~]/g, '')              // Any remaining symbols
-          .replace(/\s+/g, ' ')                 // Multiple spaces to single
-          .trim();
-        
-        if (processedLine) {
-          formattedLines.push({
-            type: 'paragraph',
-            content: processedLine,
-            className: 'text-gray-700 mb-3 leading-relaxed text-justify'
-          });
-        }
-      } else {
-        // Add spacing for empty lines
-        formattedLines.push({
-          type: 'spacing',
-          content: '',
-          className: 'mb-4'
-        });
-      }
-    }
-    
-    return formattedLines;
-  };
-  
-  const formattedLines = formatText(sanitizedContent);
-  
-  return (
-    <div className={`max-w-none bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden ${className}`}>
-      {title && (
-        <div className="p-8 border-b border-gray-200">
-          <h2 className="text-3xl font-bold text-gray-800 flex items-center gap-3">
-            <FileText className="w-8 h-8 text-gray-600" />
-            {title}
-          </h2>
-        </div>
-      )}
-      <div className="p-8">
-        <div className="prose prose-lg max-w-none">
-          {formattedLines.map((line, index) => {
-            if (line.type === 'header') {
-              return (
-                <div key={index} className={`relative ${line.className}`}>
-                  {line.level <= 2 && (
-                    <div className="absolute -left-6 top-0 w-1 h-full bg-gradient-to-b from-gray-600 to-gray-700 rounded-full"></div>
-                  )}
-                  <div className="flex items-center gap-3">
-                    {line.level === 1 && <div className="w-3 h-3 bg-gray-600 rounded-full"></div>}
-                    {line.level === 2 && <div className="w-2 h-2 bg-gray-700 rounded-full"></div>}
-                    <span>{line.content}</span>
-                  </div>
-                </div>
-              );
-            } else if (line.type === 'bullet') {
-              return (
-                <div key={index} className={`flex items-start ${line.className}`}>
-                  <div className="w-3 h-3 bg-gradient-to-br from-gray-600 to-gray-700 rounded-full mt-2 mr-4 flex-shrink-0 shadow-sm"></div>
-                  <span className="flex-1 leading-relaxed">{line.content}</span>
-                </div>
-              );
-            } else if (line.type === 'numbered') {
-              return (
-                <div key={index} className={`${line.className} pl-6 relative`}>
-                  <div className="absolute left-0 top-0 w-6 h-6 bg-gradient-to-br from-gray-600 to-gray-700 rounded-full flex items-center justify-center text-white text-xs font-bold">
-                    {line.content.match(/^\d+/) ? line.content.match(/^\d+/)[0] : '•'}
-                  </div>
-                  <span className="font-medium text-gray-800">{line.content.replace(/^\d+\.\s*/, '')}</span>
-                </div>
-              );
-            } else if (line.type === 'spacing') {
-              return <div key={index} className={line.className}></div>;
-            } else {
-              return (
-                <div key={index} className={`${line.className} p-4 bg-gray-50 rounded-lg border-l-4 border-gray-300 my-3`}>
-                  <div className="text-gray-800 leading-relaxed">{line.content}</div>
-                </div>
-              );
-            }
-          })}
-        </div>
-        
-        {/* Professional Footer */}
-        <div className="mt-8 pt-6 border-t border-gray-200">
-          <div className="flex items-center justify-between text-sm text-gray-500">
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-              <span>Document generated by BA Agent Pro</span>
-            </div>
-            <div className="text-right">
-              <div>Generated: {new Date().toLocaleDateString()}</div>
-              <div className="text-xs">Version 1.0</div>
-            </div>
-          </div>
-        </div>
-      </div>
+    <div className={`prose prose-slate max-w-none p-6 bg-white rounded-lg shadow-lg border ${className}`}>
+      {title && <h2 className="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+        <FileText className="w-6 h-6" />
+        {title}
+      </h2>}
+      <ReactMarkdown>{sanitizedMarkdown}</ReactMarkdown>
     </div>
   );
 }
 
 // Enhanced Mermaid Diagram with better error handling and loading states
 function MermaidDiagram({ code, id, showDownloadPng, showPngInline, title }) {
-MermaidDiagram.propTypes = {
-  code: PropTypes.string,
-  id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-  showDownloadPng: PropTypes.bool,
-  showPngInline: PropTypes.bool,
-  title: PropTypes.string
-};
   const containerRef = useRef(null);
   const [pngUrl, setPngUrl] = useState(null);
   const [loadingPng, setLoadingPng] = useState(false);
@@ -487,101 +138,41 @@ MermaidDiagram.propTypes = {
         }
       }
       
-      // Method 3: If all else fails, create a basic architecture diagram
-      console.log('Creating fallback architecture diagram due to subgraph issues');
+      // Method 3: If all else fails, create a basic diagram
+      console.log('Creating fallback diagram due to subgraph issues');
       return `flowchart TD
-    UI[User Interface Layer] --> BL[Business Logic Layer]
-    BL --> DAL[Data Access Layer]
-    DAL --> DB[Database]
-    BL --> API[External APIs]
-    BL --> SEC[Security Layer]
-    UI --> AUTH[Authentication]
-    AUTH --> SEC
-    style UI fill:#e1f5fe
-    style BL fill:#f3e5f5
-    style DAL fill:#e8f5e8
-    style DB fill:#fff3e0
-    style API fill:#fce4ec
-    style SEC fill:#ffebee
-    style AUTH fill:#f1f8e9`;
+    A[System Components] --> B[User Interface]
+    B --> C[Business Logic]
+    C --> D[Data Access]
+    D --> E[Database]
+    C --> F[External APIs]`;
     }
     
     // Step 5: Fix flowchart syntax issues
     // Ensure proper spacing after flowchart declaration
     cleaned = cleaned.replace(/flowchart\s*([A-Z]+)/g, 'flowchart $1');
     
-    // Step 6: Normalize node definitions with special characters
-    // 6a) Convert parentheses-shaped nodes to square-bracket nodes for stability: B(API Gateway) -> B[API Gateway]
-    cleaned = cleaned.replace(/\b([A-Za-z][\w]*)\s*\(([^)]+)\)/g, (m, id, label) => `${id}[${label}]`);
-    // 6b) If label inside [] contains parentheses, keep the text but drop only the parentheses characters, not the content
-    cleaned = cleaned.replace(/([A-Za-z])\[([^\]]*?\([^)]*\)[^\]]*?)\]/g, (match, nodeId, content) => {
-      const cleanedContent = content.replace(/[()]/g, '').trim();
+    // Step 6: Fix node definitions with special characters
+    // Handle nodes with parentheses in labels
+    cleaned = cleaned.replace(/([A-Z])\[([^\]]*?\([^)]*\)[^\]]*?)\]/g, (match, nodeId, content) => {
+      // Remove parentheses from content
+      const cleanedContent = content.replace(/\([^)]*\)/g, '').trim();
       return `${nodeId}[${cleanedContent}]`;
     });
     
     // Step 7: Fix edge definitions
-    // Remove quoted or piped edge labels which can trigger unsupported arrow types in some mermaid builds
-    cleaned = cleaned.replace(/--\s*"[^\"]*"\s*-->/g, ' --> ');
-    cleaned = cleaned.replace(/--\s*\|[^|]*\|\s*-->/g, ' --> ');
-    // Normalize spacing
+    // Handle edges with special characters
     cleaned = cleaned.replace(/([A-Z])\s*-->\s*([A-Z])/g, '$1 --> $2');
     cleaned = cleaned.replace(/([A-Z])\s*---\s*([A-Z])/g, '$1 --- $2');
     
-    // Step 8: Normalize edge spacing and line endings
-    cleaned = cleaned.replace(/\s*-->\s*/g, ' --> ');
-    cleaned = cleaned.replace(/\s*---\s*/g, ' --- ');
-    cleaned = cleaned.replace(/\n\s*\n/g, '\n');
+    // Step 8: Remove any remaining problematic characters but preserve structure
+    cleaned = cleaned.replace(/[<>]/g, ''); // Remove angle brackets
+    cleaned = cleaned.replace(/\s+/g, ' '); // Normalize whitespace
     cleaned = cleaned.trim();
     
-    // Step 9: Expand single-letter IDs to avoid Mermaid internal translation warnings
-    try {
-      const lines = cleaned.split(/\r?\n/);
-      const idMap = new Map();
-      const getHint = (ln) => {
-        const m = ln.match(/:::(\w+)/);
-        return m ? m[1].toUpperCase() : null;
-      };
-      const choose = (hint) => {
-        const known = ['UI','APP','BIZ','DATA','SEC','INFRA','API','CTRL','SVC','REPO','DB','UTIL','EXT'];
-        return (hint && known.includes(hint)) ? hint : 'NODE';
-      };
-      // Collect single-letter node defs A[...]
-      lines.forEach((ln) => {
-        const m = ln.match(/^\s*([A-Za-z])\s*\[/);
-        if (m) {
-          const id = m[1];
-          if (!idMap.has(id)) idMap.set(id, `${choose(getHint(ln))}_${id}`);
-        }
-      });
-      if (idMap.size) {
-        let updated = cleaned;
-        // Node definitions
-        idMap.forEach((newId, oldId) => {
-          const reNode = new RegExp(`(^|\\n)(\\s*)${oldId}(?=\\s*\\[)`, 'g');
-          updated = updated.replace(reNode, ($0, p1, p2) => `${p1}${p2}${newId}`);
-        });
-        // class assignments
-        updated = updated.replace(/class\s+([A-Za-z0-9_,\s]+)\s+([A-Za-z_][\w]*)\s*;/g, (full, ids, cls) => {
-          const mapped = ids.split(',').map(s => {
-            const v = s.trim();
-            return idMap.get(v) || v;
-          }).join(',');
-          return `class ${mapped} ${cls};`;
-        });
-        // other references (avoid inside labels)
-        idMap.forEach((newId, oldId) => {
-          const reEdge = new RegExp(`\\b${oldId}\\b`, 'g');
-          updated = updated.replace(reEdge, (match, offset, str) => {
-            const before = str.slice(Math.max(0, offset - 5), offset);
-            if (before.includes('[')) return match;
-            return newId;
-          });
-        });
-        cleaned = updated;
-      }
-    } catch (e) {
-      console.warn('ID expansion failed:', e);
-    }
+    // Step 9: Ensure proper line endings
+    cleaned = cleaned.replace(/\n\s*\n/g, '\n'); // Remove empty lines
+    cleaned = cleaned.replace(/\n+/g, '\n'); // Normalize line endings
     
     console.log('Cleaned Mermaid code:', cleaned);
     return cleaned;
@@ -607,21 +198,11 @@ MermaidDiagram.propTypes = {
       return fallbackCode;
     }
     
-    // Default architecture diagram fallback if no nodes can be extracted
-    return `flowchart TD
-    START[System Architecture] --> FE[Frontend Layer]
-    START --> BE[Backend Layer]
-    FE --> AUTH[Authentication Service]
-    BE --> BL[Business Logic]
-    BL --> DB[Database Layer]
-    BE --> API[External APIs]
-    style START fill:#e3f2fd
-    style FE fill:#f3e5f5
-    style BE fill:#e8f5e8
-    style AUTH fill:#fff3e0
-    style BL fill:#fce4ec
-    style DB fill:#ffebee
-    style API fill:#f1f8e9`;
+    // Default fallback if no nodes can be extracted
+    return `graph TD
+    A[Diagram Generated] --> B[Original contained complex syntax]
+    B --> C[Showing simplified version]
+    C --> D[Check code below for details]`;
   };
 
   useEffect(() => {
@@ -645,17 +226,14 @@ MermaidDiagram.propTypes = {
           window.mermaid = mermaidModule.default || mermaidModule;
         }
         
-        // Initialize mermaid with more stable configuration for flowcharts
+        // Initialize mermaid with more permissive configuration
         window.mermaid.initialize({ 
           startOnLoad: false,
           theme: 'default',
-          fontFamily: 'Inter, Arial, sans-serif',
           flowchart: { 
             useMaxWidth: true,
-            htmlLabels: false, // reduce layout issues
-            curve: 'linear',   // simpler edges reduce parser/layout warnings
-            nodeSpacing: 50,
-            rankSpacing: 60
+            htmlLabels: true,
+            curve: 'basis'
           },
           securityLevel: 'loose'
         });
@@ -673,17 +251,8 @@ MermaidDiagram.propTypes = {
             // Use a unique ID for each render to avoid conflicts
             const uniqueId = `${id}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
             
-            // Render the diagram using mermaid's render function with try-fallback
-            let svg;
-            try {
-              ({ svg } = await window.mermaid.render(uniqueId, cleanedCode));
-            } catch (primaryErr) {
-              // Try to prefix nodes that are single letters (Mermaid sometimes treats them specially)
-              const prefixed = cleanedCode.replace(/\n\s*([A-Z])\s*\[/g, (m, p1) => `\n ${p1}${p1} [`)
-                                          .replace(/class\s+([A-Z])(\s|;)/g, (m, p1, p2) => `class ${p1}${p1}${p2}`)
-                                          .replace(/\b([A-Z])\b(?![\w\[])/g, '$1');
-              ({ svg } = await window.mermaid.render(uniqueId, prefixed));
-            }
+            // Render the diagram using mermaid's render function
+            const { svg } = await window.mermaid.render(uniqueId, cleanedCode);
             
             if (isMounted) {
               setSvgContent(svg);
@@ -788,55 +357,11 @@ MermaidDiagram.propTypes = {
     }
   };
 
-  const openInDrawio = async () => {
-    try {
-      const mermaid = typeof code === 'string' ? code : '';
-      if (!mermaid) return;
-      // Convert Mermaid to draw.io XML via backend
-      const res = await fetch(`${API_BASE_URL}/api/convert_mermaid_to_drawio`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code: mermaid })
-      });
-      const data = await res.json();
-      if (!data.success) {
-        alert('Failed to convert to draw.io');
-        return;
-      }
-      const xml = data.xml;
-      // Open diagrams.net embed
-      const url = 'https://embed.diagrams.net/?embed=1&ui=min&proto=json&spin=1&libraries=1&configure=1';
-      const win = window.open(url, '_blank');
-      if (!win) {
-        alert('Popup blocked. Please allow popups to open diagrams.net.');
-        return;
-      }
-      // PostMessage handshake
-      const onMessage = (evt) => {
-        if (!evt.data) return;
-        const msg = evt.data;
-        if (msg === 'ready' || (typeof msg === 'object' && msg.event === 'ready')) {
-          // Load our diagram
-          win.postMessage(JSON.stringify({ action: 'load', xml }), '*');
-        }
-      };
-      window.addEventListener('message', onMessage, { once: true });
-    } catch (e) {
-      console.error('Open in draw.io failed', e);
-      alert('Could not open in draw.io');
-    }
-  };
-
-  // Fetch PNG for inline display; detect Lucid handoff token and skip PNG
-  const fetchPng = async () => {
+  // Fetch PNG for inline display
+  const fetchPng = useCallback(async () => {
     setLoadingPng(true);
     setPngUrl(null);
     try {
-      if (code && typeof code === 'string' && code.startsWith('LUCID_EMBED::')) {
-        setLoadingPng(false);
-        setPngUrl(null);
-        return;
-      }
       const response = await fetch(`${API_BASE_URL}/api/render_mermaid`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -854,7 +379,7 @@ MermaidDiagram.propTypes = {
       setPngUrl(null);
     }
     setLoadingPng(false);
-  };
+  }, [API_BASE_URL, code]);
 
   useEffect(() => {
     if (showPngInline && code) {
@@ -863,7 +388,7 @@ MermaidDiagram.propTypes = {
     return () => {
       if (pngUrl) window.URL.revokeObjectURL(pngUrl);
     };
-  }, [showPngInline, code]);
+  }, [showPngInline, code, fetchPng, pngUrl]);
 
   if (error && fallbackMode) {
     return (
@@ -874,14 +399,6 @@ MermaidDiagram.propTypes = {
               <BarChart3 className="w-5 h-5" />
               {title}
             </h3>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={openInDrawio}
-                  className="px-3 py-1 text-sm bg-orange-600 text-white rounded hover:bg-orange-700"
-                >
-                  Edit in draw.io
-                </button>
-              </div>
           </div>
         )}
         
@@ -891,12 +408,6 @@ MermaidDiagram.propTypes = {
             <span className="font-semibold">Diagram Rendering Issue</span>
           </div>
           <p className="text-yellow-700 mb-3">{error}</p>
-          {showPngInline && pngUrl && (
-            <div className="mb-4">
-              <h4 className="text-sm font-medium text-gray-700 mb-2">PNG Fallback Preview:</h4>
-              <img src={pngUrl} alt="Diagram PNG" className="max-w-full border rounded" />
-            </div>
-          )}
           <div className="bg-white rounded border p-3">
             <h4 className="text-sm font-medium text-gray-700 mb-2">Raw Diagram Code:</h4>
             <pre className="text-xs text-gray-600 bg-gray-50 p-2 rounded overflow-x-auto">
@@ -958,8 +469,6 @@ MermaidDiagram.propTypes = {
     );
   }
 
-  const isLucid = code && typeof code === 'string' && code.startsWith('LUCID_EMBED::');
-
   return (
     <div className="glass-card rounded-lg shadow-lg border p-6">
       {title && (
@@ -993,30 +502,22 @@ MermaidDiagram.propTypes = {
               <p className="text-gray-500">No diagram code available</p>
             </div>
           )}
-          {code && !isLucid && isRendering && (
+          {code && isRendering && (
             <div className="text-center">
               <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
               <p className="text-gray-600">Rendering diagram...</p>
             </div>
           )}
-          {code && !isLucid && error && !fallbackMode && (
+          {code && error && !fallbackMode && (
             <div className="text-center">
               <div className="w-8 h-8 border-2 border-yellow-600 border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
               <p className="text-gray-600">Attempting to fix diagram syntax...</p>
             </div>
           )}
-          {!isLucid && svgContent && (
+          {svgContent && (
             <div 
               className="w-full h-full flex items-center justify-center"
               dangerouslySetInnerHTML={{ __html: svgContent }}
-            />
-          )}
-          {isLucid && (
-            <iframe
-              title={`Lucid ${id}`}
-              src={code.replace('LUCID_EMBED::','')}
-              className="w-full h-[600px] border-0 rounded"
-              allowFullScreen
             />
           )}
         </div>
@@ -1034,9 +535,7 @@ MermaidDiagram.propTypes = {
 
 // Enhanced Backlog Stats with better visualization
 function BacklogStats({ backlog }) {
-BacklogStats.propTypes = {
-  backlog: PropTypes.array
-};
+  const [expanded, setExpanded] = useState({});
 
   const countItems = (items) => {
     let epics = 0, features = 0, stories = 0;
@@ -1089,102 +588,48 @@ BacklogStats.propTypes = {
   );
 }
 
-function BacklogBoard({ backlog }) {
-BacklogBoard.propTypes = {
-  backlog: PropTypes.array
-};
-  if (!Array.isArray(backlog) || backlog.length === 0) {
-    return (
-      <div className="p-6 text-center text-gray-500 bg-gray-50 rounded-lg border">
-        No backlog items to display
-      </div>
-    );
-  }
-
-  const epics = backlog.filter(i => (i.type || '').toLowerCase() === 'epic');
-  const columns = epics.length ? epics : backlog;
-
-  // Color tokens per type
-  const epicClasses = 'bg-indigo-50 text-indigo-900 border-indigo-300';
-  const featureClasses = 'bg-emerald-50 text-emerald-900 border-emerald-300';
-  const storyClasses = 'bg-amber-50 text-amber-900 border-amber-300';
-
+// Enhanced Progress Tracking Component
+function ProgressTracker({ currentStep, totalSteps, stepNames }) {
   return (
-    <div className="rounded-xl overflow-x-auto">
-      <div className="min-w-[800px] bg-gray-800 p-4 md:p-6 rounded-xl border border-gray-700">
-        {/* Legend */}
-        <div className="flex gap-4 mb-4 text-xs text-white/80">
-          <div className="flex items-center gap-2">
-            <span className="inline-block w-4 h-4 rounded border border-indigo-300 bg-indigo-50" /> Epic
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="inline-block w-4 h-4 rounded border border-emerald-300 bg-emerald-50" /> Feature
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="inline-block w-4 h-4 rounded border border-amber-300 bg-amber-50" /> User Story
-          </div>
+    <div className="bg-white rounded-lg shadow-lg border p-6 mb-6">
+      <h3 className="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
+        <Activity className="w-5 h-5" />
+        Analysis Progress
+      </h3>
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <span className="text-sm font-medium text-gray-700">Progress</span>
+          <span className="text-sm font-medium text-gray-700">{currentStep}/{totalSteps}</span>
         </div>
-
-        <div className="flex gap-4 md:gap-6">
-          {columns.map((epic) => {
-            const features = (epic.children || []).filter(c => (c.type || '').toLowerCase() === 'feature');
-            const directStories = (epic.children || []).filter(c => (c.type || '').toLowerCase() === 'user story');
-            const showDirectStories = features.length === 0 && directStories.length > 0;
-            return (
-              <div key={epic.id} className="w-[260px] flex-shrink-0">
-                <div className={`rounded-xl shadow border px-4 py-2 text-center font-semibold mb-3 ${epicClasses}`}>
-                  {epic.title || epic.name || 'Epic'}
-                </div>
-                <div className="grid grid-cols-1 gap-3">
-                  {features.length > 0 ? (
-                    features.map((feat) => (
-                      <div key={feat.id} className={`rounded-lg shadow border p-2 ${featureClasses}`}>
-                        <div className="text-sm font-semibold mb-2 text-center">
-                          {feat.title || feat.name || 'Feature'}
-                        </div>
-                        <div className="space-y-2">
-                          {(feat.children || []).filter(c => (c.type || '').toLowerCase() === 'user story').map((story) => (
-                            <div key={story.id} className={`rounded-md border px-3 py-2 text-xs shadow-sm ${storyClasses}`}>
-                              {story.title || story.name || 'User Story'}
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    ))
-                  ) : showDirectStories ? (
-                    <div className={`rounded-lg shadow border p-2 ${featureClasses}`}>
-                      <div className="text-sm font-semibold mb-2 text-center">User Stories</div>
-                      <div className="space-y-2">
-                        {directStories.map((story) => (
-                          <div key={story.id} className={`rounded-md border px-3 py-2 text-xs shadow-sm ${storyClasses}`}>
-                            {story.title || story.name || 'User Story'}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="bg-white/60 text-gray-600 rounded-lg border border-dashed border-gray-300 px-3 py-6 text-center text-xs">
-                      No features
-                    </div>
-                  )}
-                </div>
-              </div>
-            );
-          })}
+        <div className="w-full bg-gray-200 rounded-full h-2">
+          <div 
+            className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+            style={{ width: `${(currentStep / totalSteps) * 100}%` }}
+          ></div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2">
+          {stepNames.map((step, index) => (
+            <div 
+              key={index}
+              className={`p-2 rounded text-xs font-medium ${
+                index < currentStep 
+                  ? 'bg-green-100 text-green-800 border border-green-200' 
+                  : index === currentStep 
+                    ? 'bg-blue-100 text-blue-800 border border-blue-200'
+                    : 'bg-gray-100 text-gray-600 border border-gray-200'
+              }`}
+            >
+              {step}
+            </div>
+          ))}
         </div>
       </div>
     </div>
   );
 }
 
-// Enhanced Progress Tracking Component
-
 // Enhanced Real-time Collaboration Component
 function CollaborationPanel({ notifications, messages }) {
-CollaborationPanel.propTypes = {
-  notifications: PropTypes.array,
-  messages: PropTypes.array
-};
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -1219,215 +664,132 @@ CollaborationPanel.propTypes = {
 }
 
 function BacklogCards({ backlog }) {
-// Helper function to render backlog tree
-function renderTree(items) {
-  if (!Array.isArray(items)) return null;
-  return items.map((item) => (
-    <div key={item.id || item.name || item.title} className="mb-2">
-      <div className="font-semibold text-gray-800">{item.title || item.name || 'Item'}</div>
-      {item.children && item.children.length > 0 && (
-        <div className="ml-4">
-          {renderTree(item.children)}
-        </div>
-      )}
-    </div>
-  ));
-}
+  const [expanded, setExpanded] = useState({});
+  
   // Debug: Log the backlog prop
   console.log('BacklogCards received:', backlog);
   console.log('BacklogCards type:', typeof backlog);
   console.log('BacklogCards isArray:', Array.isArray(backlog));
+  
   if (Array.isArray(backlog) && backlog.length > 0) {
-    return <div className="bg-blue-50 rounded-lg p-4 shadow-inner">{renderTree(backlog)}</div>;
+    console.log('BacklogCards: First item details:', {
+      id: backlog[0].id,
+      type: backlog[0].type,
+      title: backlog[0].title,
+      description: backlog[0].description,
+      hasChildren: backlog[0].children && backlog[0].children.length > 0,
+      childrenCount: backlog[0].children ? backlog[0].children.length : 0,
+      hasLinkingInfo: !!(backlog[0].trd_sections || backlog[0].requirements_covered)
+    });
   }
+  
+  if (!Array.isArray(backlog) || backlog.length === 0) {
+    console.log('BacklogCards: No valid backlog data, showing empty message');
+    return <div className="p-4 text-gray-500 text-center">No backlog items were generated.</div>;
+  }
+
+  const toggle = (id) => setExpanded((prev) => ({ ...prev, [id]: !prev[id] }));
+
+  const renderLinkingInfo = (item) => {
+    const hasLinkingInfo = item.trd_sections || item.requirements_covered;
+    
+    if (!hasLinkingInfo) return null;
+
+    return (
+      <div className="mt-2 p-2 bg-blue-50 rounded-md border border-blue-200">
+        <div className="text-xs font-medium text-blue-700 mb-1">Links to:</div>
+        {item.trd_sections && item.trd_sections.length > 0 && (
+          <div className="mb-1">
+            <span className="text-xs text-blue-600 font-medium">TRD Sections: </span>
+            <span className="text-xs text-blue-800">{item.trd_sections.join(', ')}</span>
+          </div>
+        )}
+        {item.requirements_covered && item.requirements_covered.length > 0 && (
+          <div>
+            <span className="text-xs text-blue-600 font-medium">Requirements: </span>
+            <span className="text-xs text-blue-800">{item.requirements_covered.join(', ')}</span>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  const renderTree = (items, level = 0) => (
+    <ul className={level > 0 ? "ml-4 pl-4 border-l-2 border-blue-200" : ""}>
+      {items.map(item => (
+        <li key={item.id} className="mb-3">
+          <div className="bg-white rounded-md border border-gray-200 p-3 hover:shadow-md transition-shadow">
+            <div className="flex items-center gap-2 mb-2">
+              {item.children && item.children.length > 0 ? (
+                <button onClick={() => toggle(item.id)} className="focus:outline-none">
+                  {expanded[item.id] ? <ChevronDown className="w-4 h-4 text-blue-500" /> : <ChevronRight className="w-4 h-4 text-gray-500" />}
+                </button>
+              ) : <span className="w-4 h-4" />}
+              <span className={`font-semibold w-20 text-center text-xs py-1 rounded-full ${
+                  item.type === 'Epic' ? 'bg-purple-100 text-purple-700' :
+                  item.type === 'Feature' ? 'bg-sky-100 text-sky-700' :
+                  'bg-emerald-100 text-emerald-700'
+              }`}>{item.type}</span>
+              <span className="text-gray-800 flex-1 font-medium">{item.title}</span>
+              {item.priority && (
+                <span className={`text-xs px-2 py-1 rounded-full ${
+                  item.priority === 'High' ? 'bg-red-100 text-red-700' :
+                  item.priority === 'Medium' ? 'bg-yellow-100 text-yellow-700' :
+                  'bg-green-100 text-green-700'
+                }`}>{item.priority}</span>
+              )}
+              {item.effort && (
+                <span className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded-full">
+                  {item.effort} SP
+                </span>
+              )}
+            </div>
+            
+            {item.description && (
+              <div className="text-sm text-gray-600 mb-2 ml-6">{item.description}</div>
+            )}
+            
+            {renderLinkingInfo(item)}
+            
+            {item.acceptance_criteria && item.acceptance_criteria.length > 0 && (
+              <div className="mt-2 ml-6">
+                <div className="text-xs font-medium text-gray-700 mb-1">Acceptance Criteria:</div>
+                <ul className="text-xs text-gray-600 space-y-1">
+                  {item.acceptance_criteria.map((criterion, index) => (
+                    <li key={index} className="flex items-start gap-1">
+                      <span className="text-green-500 mt-0.5">•</span>
+                      <span>{criterion}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+          {item.children && item.children.length > 0 && expanded[item.id] && renderTree(item.children, level + 1)}
+        </li>
+      ))}
+    </ul>
+  );
+  return <div className="bg-blue-50 rounded-lg p-4 shadow-inner">{renderTree(backlog)}</div>;
 }
 
-BacklogCards.propTypes = {
-  backlog: PropTypes.array.isRequired,
-};
-
-const Sidebar = ({ 
-  activeSection, setActiveSection, 
-  documents, pastAnalyses, 
-  selectedDocument, setSelectedDocument, 
-  selectedAnalysis, setSelectedAnalysis, 
-  sidebarOpen, setSidebarOpen, onLogout,
-  selectedLOB, setSelectedLOB,
-  projectTags, setProjectTags,
-  availableTags, setAvailableTags,
-  showTagInput, setShowTagInput,
-  newTag, setNewTag,
-  addTag, removeTag, addNewTag,
-  lobCategories,
-  filteredDocuments, filteredAnalyses
-}) => {
-  const [showLOBSelector, setShowLOBSelector] = useState(false);
-  const [showTagSelector, setShowTagSelector] = useState(false);
-
-  return (
-    <aside className={`sidebar fixed lg:relative left-4 lg:left-8 top-20 lg:top-8 h-[calc(100vh-8rem)] lg:h-[calc(100vh-6rem)] w-64 z-40 transition-all duration-300 ease-in-out ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 lg:flex-shrink-0 rounded-2xl lg:rounded-3xl overflow-hidden bg-white shadow-xl border border-gray-200`}>
+const Sidebar = ({ activeSection, setActiveSection, documents, pastAnalyses, selectedDocument, setSelectedDocument, selectedAnalysis, setSelectedAnalysis, sidebarOpen, setSidebarOpen }) => (
+  <aside className={`sidebar fixed lg:relative left-4 lg:left-8 top-20 lg:top-8 h-[calc(100vh-8rem)] lg:h-[calc(100vh-6rem)] w-56 z-40 transition-all duration-300 ease-in-out ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 lg:flex-shrink-0 rounded-2xl lg:rounded-3xl overflow-hidden`}>
     <div className="flex flex-col h-full">
-        {/* Header */}
-        <div className="p-4 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50">
+      <div className="p-4 border-b border-gray-200">
         <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-              <FileText className="w-5 h-5 text-white" />
+          <div className="w-7 h-7 bg-blue-600 rounded-lg flex items-center justify-center">
+            <FileText className="w-4 h-4 text-white" />
           </div>
-            <h1 className="text-lg font-bold text-gray-900">BA Agent Pro</h1>
+          <h1 className="text-lg font-bold text-gray-900">BA Agent</h1>
         </div>
-          <p className="text-xs text-gray-600 mt-1">P&C Insurance Solutions</p>
       </div>
       
-        {/* LOB Selector */}
-        <div className="p-3 border-b border-gray-100">
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm font-semibold text-gray-700">Line of Business</h3>
-            <button
-              onClick={() => setShowLOBSelector(!showLOBSelector)}
-              className="text-blue-600 hover:text-blue-700"
-            >
-              {showLOBSelector ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-            </button>
-          </div>
-          
-          {showLOBSelector && (
-            <div className="space-y-1 max-h-48 overflow-y-auto">
-              {lobCategories.map((lob) => (
-                <button
-                  key={lob.id}
-                  onClick={() => setSelectedLOB(lob.id)}
-                  className={`w-full p-2 rounded-lg flex items-center gap-2 text-sm transition-all ${
-                    selectedLOB === lob.id
-                      ? 'bg-blue-100 text-blue-700 border border-blue-200'
-                      : 'text-gray-600 hover:bg-gray-50'
-                  }`}
-                >
-                  <span className="text-lg">{lob.icon}</span>
-                  <span className="font-medium">{lob.name}</span>
-                </button>
-              ))}
-            </div>
-          )}
-          
-          {/* Current LOB Display */}
-          {!showLOBSelector && (
-            <div className="flex items-center gap-2 p-2 bg-gray-50 rounded-lg">
-              <span className="text-lg">
-                {lobCategories.find(lob => lob.id === selectedLOB)?.icon || '📊'}
-              </span>
-              <span className="text-sm font-medium text-gray-700">
-                {lobCategories.find(lob => lob.id === selectedLOB)?.name || 'All Lines'}
-              </span>
-            </div>
-          )}
-        </div>
-
-        {/* Project Tags */}
-        <div className="p-3 border-b border-gray-100">
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm font-semibold text-gray-700">Project Tags</h3>
-            <button
-              onClick={() => setShowTagSelector(!showTagSelector)}
-              className="text-blue-600 hover:text-blue-700"
-            >
-              {showTagSelector ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-            </button>
-          </div>
-          
-          {showTagSelector && (
-            <div className="space-y-2">
-              {/* Selected Tags */}
-              {projectTags.length > 0 && (
-                <div className="flex flex-wrap gap-1">
-                  {projectTags.map((tag) => (
-                    <span
-                      key={tag}
-                      className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-full"
-                    >
-                      {tag}
-                      <button
-                        onClick={() => removeTag(tag)}
-                        className="text-blue-500 hover:text-blue-700"
-                      >
-                        ×
-                      </button>
-                    </span>
-                  ))}
-                </div>
-              )}
-              
-              {/* Available Tags */}
-              <div className="max-h-32 overflow-y-auto">
-                <div className="text-xs text-gray-500 mb-1">Available Tags:</div>
-                <div className="flex flex-wrap gap-1">
-                  {availableTags
-                    .filter(tag => !projectTags.includes(tag))
-                    .map((tag) => (
-                      <button
-                        key={tag}
-                        onClick={() => addTag(tag)}
-                        className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full hover:bg-gray-200 transition-colors"
-                      >
-                        + {tag}
-                      </button>
-                    ))}
-                </div>
-              </div>
-              
-              {/* Add New Tag */}
-              <div className="pt-2 border-t border-gray-100">
-                <button
-                  onClick={() => setShowTagInput(!showTagInput)}
-                  className="text-xs text-blue-600 hover:text-blue-700"
-                >
-                  + Add Custom Tag
-                </button>
-                {showTagInput && (
-                  <div className="mt-2 flex gap-1">
-                    <input
-                      type="text"
-                      value={newTag}
-                      onChange={(e) => setNewTag(e.target.value)}
-                      placeholder="New tag..."
-                      className="flex-1 px-2 py-1 text-xs border border-gray-300 rounded"
-                      onKeyPress={(e) => e.key === 'Enter' && addNewTag()}
-                    />
-                    <button
-                      onClick={addNewTag}
-                      className="px-2 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700"
-                    >
-                      Add
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-          
-          {/* Current Tags Display */}
-          {!showTagSelector && projectTags.length > 0 && (
-            <div className="flex flex-wrap gap-1">
-              {projectTags.slice(0, 3).map((tag) => (
-                <span
-                  key={tag}
-                  className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-full"
-                >
-                  {tag}
-                </span>
-              ))}
-              {projectTags.length > 3 && (
-                <span className="text-xs text-gray-500">+{projectTags.length - 3} more</span>
-              )}
-            </div>
-          )}
-        </div>
-        
-        {/* Navigation */}
       <div className="flex-1 p-3 space-y-2">
         <button
-            onClick={() => setActiveSection('upload')}
+          onClick={() => setActiveSection('new-analysis')}
           className={`w-full p-3 rounded-xl flex items-center gap-3 transition-all duration-200 ${
-              activeSection === 'upload' 
+            activeSection === 'new-analysis' 
               ? 'bg-blue-50 text-blue-600 border border-blue-200 shadow-sm' 
               : 'text-gray-700 hover:bg-gray-50 hover:shadow-sm'
           }`}
@@ -1445,9 +807,7 @@ const Sidebar = ({
           }`}
         >
           <Folder className="w-4 h-4" />
-            <span className="font-medium text-sm">
-              Documents ({filteredDocuments.length})
-            </span>
+          <span className="font-medium text-sm">Documents ({documents.length})</span>
         </button>
         
         <button
@@ -1459,14 +819,11 @@ const Sidebar = ({
           }`}
         >
           <Clock className="w-4 h-4" />
-            <span className="font-medium text-sm">
-              Past Analyses ({filteredAnalyses.length})
-            </span>
+          <span className="font-medium text-sm">Past Analyses ({pastAnalyses.length})</span>
         </button>
       </div>
       
-        {/* Footer */}
-      <div className="p-3 border-t border-gray-200 space-y-2">
+      <div className="p-3 border-t border-gray-200">
         <button
           onClick={() => setActiveSection('capabilities')}
           className={`w-full p-3 rounded-xl flex items-center gap-3 transition-all duration-200 ${
@@ -1478,465 +835,10 @@ const Sidebar = ({
           <Settings className="w-4 h-4" />
           <span className="font-medium text-sm">Admin Portal</span>
         </button>
-        
-        <button
-          onClick={onLogout}
-          className="w-full p-3 rounded-xl flex items-center gap-3 transition-all duration-200 text-red-600 hover:bg-red-50 hover:shadow-sm border border-transparent hover:border-red-200"
-        >
-          <LogOut className="w-4 h-4" />
-          <span className="font-medium text-sm">Logout</span>
-        </button>
       </div>
     </div>
   </aside>
 );
-};
-
-Sidebar.propTypes = {
-  activeSection: PropTypes.string.isRequired,
-  setActiveSection: PropTypes.func.isRequired,
-  documents: PropTypes.array.isRequired,
-  pastAnalyses: PropTypes.array.isRequired,
-  selectedDocument: PropTypes.any,
-  setSelectedDocument: PropTypes.func.isRequired,
-  selectedAnalysis: PropTypes.any,
-  setSelectedAnalysis: PropTypes.func.isRequired,
-  sidebarOpen: PropTypes.bool.isRequired,
-  setSidebarOpen: PropTypes.func.isRequired,
-  onLogout: PropTypes.func.isRequired,
-  selectedLOB: PropTypes.any,
-  setSelectedLOB: PropTypes.func.isRequired,
-  projectTags: PropTypes.array.isRequired,
-  setProjectTags: PropTypes.func.isRequired,
-  availableTags: PropTypes.array.isRequired,
-  setAvailableTags: PropTypes.func.isRequired,
-  showTagInput: PropTypes.bool.isRequired,
-  setShowTagInput: PropTypes.func.isRequired,
-  newTag: PropTypes.string.isRequired,
-  setNewTag: PropTypes.func.isRequired,
-  addTag: PropTypes.func.isRequired,
-  removeTag: PropTypes.func.isRequired,
-  addNewTag: PropTypes.func.isRequired,
-  lobCategories: PropTypes.array.isRequired,
-  filteredDocuments: PropTypes.array.isRequired,
-  filteredAnalyses: PropTypes.array.isRequired,
-};
-
-// Breadcrumb Navigation Component
-const BreadcrumbNavigation = ({ activeSection, selectedLOB, projectTags, lobCategories }) => {
-  const getSectionIcon = (section) => {
-    switch (section) {
-      case 'upload': return <UploadCloud className="w-4 h-4" />;
-      case 'documents': return <Folder className="w-4 h-4" />;
-      case 'analyses': return <Clock className="w-4 h-4" />;
-      case 'capabilities': return <Settings className="w-4 h-4" />;
-      default: return <Activity className="w-4 h-4" />;
-    }
-  };
-
-  const getSectionName = (section) => {
-    switch (section) {
-      case 'upload': return 'New Analysis';
-      case 'documents': return 'Documents';
-      case 'analyses': return 'Past Analyses';
-      case 'capabilities': return 'Admin Portal';
-      default: return 'Dashboard';
-    }
-  };
-
-  return (
-    <div className="mb-6 p-4 bg-white rounded-xl shadow-sm border border-gray-200">
-      <div className="flex items-center gap-2 text-sm text-gray-600">
-        <span className="flex items-center gap-1">
-          <Target className="w-4 h-4 text-blue-600" />
-          <span className="font-medium">BA Agent Pro</span>
-        </span>
-        <ChevronRight className="w-4 h-4" />
-        <span className="flex items-center gap-1">
-          {getSectionIcon(activeSection)}
-          <span className="font-medium">{getSectionName(activeSection)}</span>
-        </span>
-        
-        {selectedLOB !== 'all' && (
-          <>
-            <ChevronRight className="w-4 h-4" />
-            <span className="flex items-center gap-1">
-              <span className="text-lg">
-                {lobCategories.find(lob => lob.id === selectedLOB)?.icon}
-              </span>
-              <span className="font-medium">
-                {lobCategories.find(lob => lob.id === selectedLOB)?.name}
-              </span>
-            </span>
-          </>
-        )}
-        
-        {projectTags.length > 0 && (
-          <>
-            <ChevronRight className="w-4 h-4" />
-            <div className="flex items-center gap-1">
-              <span className="font-medium">Tags:</span>
-              <div className="flex gap-1">
-                {projectTags.slice(0, 2).map((tag) => (
-                  <span
-                    key={tag}
-                    className="inline-flex items-center gap-1 px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full"
-                  >
-                    {tag}
-                  </span>
-                ))}
-                {projectTags.length > 2 && (
-                  <span className="text-xs text-gray-500">+{projectTags.length - 2} more</span>
-                )}
-              </div>
-            </div>
-          </>
-        )}
-      </div>
-    </div>
-  );
-};
-
-// Quick Stats Dashboard Component
-const QuickStats = ({ documents, analyses, selectedLOB, projectTags, lobCategories, setActiveSection }) => {
-  const currentLOB = lobCategories.find(lob => lob.id === selectedLOB);
-  
-  return (
-    <div className="mb-6 grid grid-cols-1 md:grid-cols-4 gap-4">
-      {/* Documents Card - Clickable */}
-      <div 
-        className="bg-white p-4 rounded-xl shadow-sm border border-gray-200 cursor-pointer hover:shadow-md hover:border-blue-300 transition-all duration-200 group"
-        onClick={() => setActiveSection('documents')}
-      >
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center group-hover:bg-blue-200 transition-colors">
-            <Folder className="w-5 h-5 text-blue-600" />
-          </div>
-          <div>
-            <p className="text-sm text-gray-600">Documents</p>
-            <p className="text-xl font-bold text-gray-800">{documents.length}</p>
-          </div>
-        </div>
-        <div className="mt-2 flex items-center text-xs text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity">
-          <span>Click to view documents</span>
-          <ArrowRight className="w-3 h-3 ml-1" />
-        </div>
-      </div>
-      
-      {/* Analyses Card - Clickable */}
-      <div 
-        className="bg-white p-4 rounded-xl shadow-sm border border-gray-200 cursor-pointer hover:shadow-md hover:border-green-300 transition-all duration-200 group"
-        onClick={() => setActiveSection('analyses')}
-      >
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center group-hover:bg-green-200 transition-colors">
-            <Clock className="w-5 h-5 text-green-600" />
-          </div>
-          <div>
-            <p className="text-sm text-gray-600">Analyses</p>
-            <p className="text-xl font-bold text-gray-800">{analyses.length}</p>
-          </div>
-        </div>
-        <div className="mt-2 flex items-center text-xs text-green-600 opacity-0 group-hover:opacity-100 transition-opacity">
-          <span>Click to view analyses</span>
-          <ArrowRight className="w-3 h-3 ml-1" />
-        </div>
-      </div>
-      
-      {/* Current LOB Card - Not clickable */}
-      <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-            <span className="text-lg">{currentLOB?.icon || '📊'}</span>
-          </div>
-          <div>
-            <p className="text-sm text-gray-600">Current LOB</p>
-            <p className="text-sm font-bold text-gray-800">{currentLOB?.name || 'All Lines'}</p>
-          </div>
-        </div>
-      </div>
-      
-      {/* Active Tags Card - Not clickable */}
-      <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
-            <Link className="w-5 h-5 text-orange-600" />
-          </div>
-          <div>
-            <p className="text-sm text-gray-600">Active Tags</p>
-            <p className="text-xl font-bold text-gray-800">{projectTags.length}</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// Enhanced Search and Filter Component
-const SearchAndFilterBar = ({ 
-  searchQuery, setSearchQuery, 
-  sortBy, setSortBy, 
-  sortOrder, setSortOrder, 
-  viewMode, setViewMode,
-  showAdvancedFilters, setShowAdvancedFilters,
-  dateRange, setDateRange,
-  statusFilter, setStatusFilter,
-  lobCategories
-}) => {
-  return (
-    <div className="mb-6 bg-white rounded-xl shadow-sm border border-gray-200 p-4">
-      <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center">
-        {/* Search Bar */}
-        <div className="flex-1 min-w-0">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-            <input
-              type="text"
-              placeholder="Search by document name, content, tags, LOB, file type, or status..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-            {searchQuery && (
-              <button
-                onClick={() => setSearchQuery('')}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-              >
-                <XCircle className="w-4 h-4" />
-              </button>
-            )}
-          </div>
-        </div>
-
-        {/* Sort and View Controls */}
-        <div className="flex items-center gap-2">
-          {/* Sort Dropdown */}
-          <select
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          >
-            <option value="date">Date</option>
-            <option value="name">Name</option>
-            <option value="lob">Line of Business</option>
-            <option value="tags">Tags</option>
-          </select>
-
-          {/* Sort Order */}
-          <button
-            onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
-            className="p-2 border border-gray-300 rounded-lg hover:bg-gray-50"
-            title={`Sort ${sortOrder === 'asc' ? 'Descending' : 'Ascending'}`}
-          >
-            {sortOrder === 'asc' ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-          </button>
-
-          {/* View Mode Toggle */}
-          <div className="flex border border-gray-300 rounded-lg overflow-hidden">
-            <button
-              onClick={() => setViewMode('grid')}
-              className={`p-2 ${viewMode === 'grid' ? 'bg-blue-500 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
-              title="Grid View"
-            >
-              <div className="w-4 h-4 grid grid-cols-2 gap-0.5">
-                <div className="w-1.5 h-1.5 bg-current rounded-sm"></div>
-                <div className="w-1.5 h-1.5 bg-current rounded-sm"></div>
-                <div className="w-1.5 h-1.5 bg-current rounded-sm"></div>
-                <div className="w-1.5 h-1.5 bg-current rounded-sm"></div>
-              </div>
-            </button>
-            <button
-              onClick={() => setViewMode('list')}
-              className={`p-2 ${viewMode === 'list' ? 'bg-blue-500 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
-              title="List View"
-            >
-              <div className="w-4 h-4 flex flex-col gap-0.5">
-                <div className="w-full h-1 bg-current rounded-sm"></div>
-                <div className="w-full h-1 bg-current rounded-sm"></div>
-                <div className="w-full h-1 bg-current rounded-sm"></div>
-              </div>
-            </button>
-          </div>
-
-          {/* Advanced Filters Toggle */}
-          <button
-            onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
-            className={`p-2 border rounded-lg flex items-center gap-2 ${
-              showAdvancedFilters ? 'bg-blue-500 text-white border-blue-500' : 'border-gray-300 text-gray-600 hover:bg-gray-50'
-            }`}
-          >
-            <Settings className="w-4 h-4" />
-            <span className="text-sm">Filters</span>
-          </button>
-        </div>
-      </div>
-
-      {/* Advanced Filters Panel */}
-      {showAdvancedFilters && (
-        <div className="mt-4 pt-4 border-t border-gray-200">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {/* Date Range */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Date Range</label>
-              <div className="flex gap-2">
-                <input
-                  type="date"
-                  value={dateRange.start || ''}
-                  onChange={(e) => setDateRange({ ...dateRange, start: e.target.value })}
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-                <input
-                  type="date"
-                  value={dateRange.end || ''}
-                  onChange={(e) => setDateRange({ ...dateRange, end: e.target.value })}
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-            </div>
-
-            {/* Status Filter */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                <option value="all">All Status</option>
-                <option value="completed">Completed</option>
-                <option value="in-progress">In Progress</option>
-                <option value="pending">Pending</option>
-              </select>
-            </div>
-
-            {/* Clear Filters */}
-            <div className="flex items-end">
-              <button
-                onClick={() => {
-                  setSearchQuery('');
-                  setDateRange({ start: null, end: null });
-                  setStatusFilter('all');
-                }}
-                className="w-full px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
-              >
-                Clear All Filters
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-};
-
-// Enhanced Analytics Dashboard Component
-const AnalyticsDashboard = ({ documents, analyses, selectedLOB, projectTags, lobCategories }) => {
-  // Calculate analytics
-  const totalDocuments = documents.length;
-  const totalAnalyses = analyses.length;
-  const lobDistribution = lobCategories.reduce((acc, lob) => {
-    if (lob.id === 'all') return acc;
-    const count = documents.filter(doc => doc.lob === lob.id).length;
-    return { ...acc, [lob.name]: count };
-  }, {});
-  
-  const tagUsage = projectTags.reduce((acc, tag) => {
-    const count = documents.filter(doc => doc.tags && doc.tags.includes(tag)).length;
-    return { ...acc, [tag]: count };
-  }, {});
-  
-  const recentActivity = [...documents, ...analyses]
-    .sort((a, b) => new Date(b.uploadDate || b.date) - new Date(a.uploadDate || a.date))
-    .slice(0, 5);
-
-  return (
-    <div className="mb-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
-      {/* LOB Distribution */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-        <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-          <BarChart3 className="w-5 h-5 text-blue-600" />
-          Line of Business Distribution
-        </h3>
-        <div className="space-y-3">
-          {Object.entries(lobDistribution).map(([lob, count]) => (
-            <div key={lob} className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-medium text-gray-700">{lob}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-24 bg-gray-200 rounded-full h-2">
-                  <div 
-                    className="bg-blue-600 h-2 rounded-full" 
-                    style={{ width: `${(count / totalDocuments) * 100}%` }}
-                  ></div>
-                </div>
-                <span className="text-sm text-gray-600 w-8 text-right">{count}</span>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Tag Usage Analytics */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-        <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-          <Link className="w-5 h-5 text-green-600" />
-          Tag Usage Analytics
-        </h3>
-        <div className="space-y-3">
-          {Object.entries(tagUsage).map(([tag, count]) => (
-            <div key={tag} className="flex items-center justify-between">
-              <span className="text-sm font-medium text-gray-700">{tag}</span>
-              <div className="flex items-center gap-2">
-                <div className="w-24 bg-gray-200 rounded-full h-2">
-                  <div 
-                    className="bg-green-600 h-2 rounded-full" 
-                    style={{ width: `${(count / totalDocuments) * 100}%` }}
-                  ></div>
-                </div>
-                <span className="text-sm text-gray-600 w-8 text-right">{count}</span>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Recent Activity */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 lg:col-span-2">
-        <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-          <Activity className="w-5 h-5 text-purple-600" />
-          Recent Activity
-        </h3>
-        <div className="space-y-3">
-          {recentActivity.map((item, index) => (
-            <div key={index} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-              <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                {item.type === 'document' ? (
-                  <FileText className="w-4 h-4 text-blue-600" />
-                ) : (
-                  <Clock className="w-4 h-4 text-green-600" />
-                )}
-              </div>
-              <div className="flex-1">
-                <p className="text-sm font-medium text-gray-800">
-                  {item.name || item.title || 'Untitled'}
-                </p>
-                <p className="text-xs text-gray-500">
-                  {new Date(item.uploadDate || item.date).toLocaleDateString()}
-                </p>
-              </div>
-              {item.lob && (
-                <span className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-full">
-                  {lobCategories.find(lob => lob.id === item.lob)?.icon} {item.lob}
-                </span>
-              )}
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-};
 
 const Capabilities = () => (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -1951,19 +853,19 @@ const Capabilities = () => (
         <div className="text-gray-500 text-sm text-center">Extracts key text from your documents.</div>
       </div>
       <div className="bg-white rounded-xl shadow p-6 flex flex-col items-center">
-        <List className="w-8 h-8 text-blue-500 mb-2" />
+        <ListCollapse className="w-8 h-8 text-blue-500 mb-2" />
         <div className="font-bold text-gray-800 mb-1">Automated TRD</div>
         <div className="text-gray-500 text-sm text-center">Generates Technical Requirements Document.</div>
       </div>
       <div className="bg-white rounded-xl shadow p-6 flex flex-col items-center">
-        <Send className="w-8 h-8 text-blue-500 mb-2" />
+        <SendIcon className="w-8 h-8 text-blue-500 mb-2" />
         <div className="font-bold text-gray-800 mb-1">Seamless Integration</div>
         <div className="text-gray-500 text-sm text-center">Streamlines TRD approval and DevOps sync.</div>
       </div>
     </div>
   );
 
-const DocumentsSection = ({ documents, selectedDocument, setSelectedDocument, setDocuments, setNotification, selectedLOB, projectTags, lobCategories }) => {
+const DocumentsSection = ({ documents, selectedDocument, setSelectedDocument, setDocuments, setNotification }) => {
   const [uploading, setUploading] = useState(false);
 
   const handleDocumentUpload = async (e) => {
@@ -1997,24 +899,7 @@ const DocumentsSection = ({ documents, selectedDocument, setSelectedDocument, se
   return (
     <div className="bg-white rounded-2xl shadow-xl p-8">
       <div className="flex items-center justify-between mb-6">
-        <div>
         <h2 className="text-2xl font-bold text-gray-800">Documents Library</h2>
-          <div className="flex items-center gap-2 mt-1">
-            {selectedLOB !== 'all' && (
-              <span className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-full">
-                {lobCategories.find(lob => lob.id === selectedLOB)?.icon} {lobCategories.find(lob => lob.id === selectedLOB)?.name}
-              </span>
-            )}
-            {projectTags.map((tag) => (
-              <span key={tag} className="inline-flex items-center gap-1 px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full">
-                {tag}
-              </span>
-            ))}
-            <span className="text-sm text-gray-500">
-              Showing {documents.length} of {documents.length} documents
-            </span>
-          </div>
-        </div>
         <label className="bg-blue-600 text-white px-4 py-2 rounded-lg cursor-pointer hover:bg-blue-700 transition-all">
           {uploading ? 'Uploading...' : 'Upload Document'}
           <input
@@ -2039,42 +924,16 @@ const DocumentsSection = ({ documents, selectedDocument, setSelectedDocument, se
             <div
               key={doc.id}
               onClick={() => setSelectedDocument(doc)}
-              className={`p-4 border rounded-lg cursor-pointer transition-all hover:shadow-md ${
+              className={`p-4 border rounded-lg cursor-pointer transition-all ${
                 selectedDocument?.id === doc.id ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-blue-300'
               }`}
             >
-              <div className="flex items-start justify-between mb-3">
               <div className="flex items-center gap-3">
                 <FileText className="w-8 h-8 text-blue-500" />
                 <div className="flex-1">
                   <h4 className="font-semibold text-gray-800 truncate">{doc.name}</h4>
                   <p className="text-sm text-gray-500">{doc.uploadDate}</p>
                 </div>
-              </div>
-            </div>
-              
-              {/* LOB and Tags */}
-              <div className="space-y-2">
-                {doc.lob && (
-                  <div className="flex items-center gap-1">
-                    <span className="text-xs text-gray-500">LOB:</span>
-                    <span className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-full">
-                      {lobCategories.find(lob => lob.id === doc.lob)?.icon || '📊'} {doc.lob}
-                    </span>
-                  </div>
-                )}
-                {doc.tags && doc.tags.length > 0 && (
-                  <div className="flex flex-wrap gap-1">
-                    {doc.tags.slice(0, 3).map((tag) => (
-                      <span key={tag} className="inline-flex items-center gap-1 px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full">
-                        {tag}
-                      </span>
-                    ))}
-                    {doc.tags.length > 3 && (
-                      <span className="text-xs text-gray-500">+{doc.tags.length - 3} more</span>
-                    )}
-                  </div>
-                )}
               </div>
             </div>
           ))}
@@ -2084,29 +943,10 @@ const DocumentsSection = ({ documents, selectedDocument, setSelectedDocument, se
   );
 };
 
-const PastAnalysesSection = ({ pastAnalyses, selectedAnalysis, setSelectedAnalysis, selectedLOB, projectTags, lobCategories }) => {
+const PastAnalysesSection = ({ pastAnalyses, selectedAnalysis, setSelectedAnalysis }) => {
   return (
     <div className="bg-white rounded-2xl shadow-xl p-8">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-800">Past Analyses</h2>
-          <div className="flex items-center gap-2 mt-1">
-            {selectedLOB !== 'all' && (
-              <span className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-full">
-                {lobCategories.find(lob => lob.id === selectedLOB)?.icon} {lobCategories.find(lob => lob.id === selectedLOB)?.name}
-              </span>
-            )}
-            {projectTags.map((tag) => (
-              <span key={tag} className="inline-flex items-center gap-1 px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full">
-                {tag}
-              </span>
-            ))}
-            <span className="text-sm text-gray-500">
-              Showing {pastAnalyses.length} of {pastAnalyses.length} analyses
-            </span>
-          </div>
-        </div>
-      </div>
+      <h2 className="text-2xl font-bold text-gray-800 mb-6">Past Analyses</h2>
       
       {pastAnalyses.length === 0 ? (
         <div className="text-center py-12">
@@ -2179,7 +1019,7 @@ const PastAnalysesSection = ({ pastAnalyses, selectedAnalysis, setSelectedAnalys
                       )}
                       {selectedAnalysis.results.backlog && (
                         <div className="flex items-center gap-2 text-sm">
-                          <List className="w-4 h-4 text-purple-500" />
+                          <ListCollapse className="w-4 h-4 text-purple-500" />
                           <span>Project Backlog</span>
                         </div>
                       )}
@@ -2209,9 +1049,6 @@ const PastAnalysesSection = ({ pastAnalyses, selectedAnalysis, setSelectedAnalys
 };
 
 function MainApp() {
-  // Authentication state
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-
   // Global error handler for DOM manipulation issues
   useEffect(() => {
     const handleGlobalError = (event) => {
@@ -2249,243 +1086,6 @@ function MainApp() {
   const [notifications, setNotifications] = useState([]);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [approvalReady, setApprovalReady] = useState(false);
-
-  // Enhanced LOB and Project Tagging State
-  const [selectedLOB, setSelectedLOB] = useState('all');
-  const [projectTags, setProjectTags] = useState([]);
-  const [availableTags, setAvailableTags] = useState([
-    'P&C Insurance', 'Personal Auto', 'Commercial Auto', 'Homeowners', 
-    'General Liability', 'Workers Comp', 'Cyber Insurance', 'Property',
-    'US Market', 'Europe Market', 'High Priority', 'In Progress', 'Completed'
-  ]);
-  const [showTagInput, setShowTagInput] = useState(false);
-  const [newTag, setNewTag] = useState('');
-  const [filteredDocuments, setFilteredDocuments] = useState([]);
-  const [filteredAnalyses, setFilteredAnalyses] = useState([]);
-
-  // Enhanced Search and Filtering State
-  const [searchQuery, setSearchQuery] = useState('');
-  const [sortBy, setSortBy] = useState('date'); // date, name, lob, tags
-  const [sortOrder, setSortOrder] = useState('desc'); // asc, desc
-  const [viewMode, setViewMode] = useState('grid'); // grid, list, compact
-  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
-  const [dateRange, setDateRange] = useState({ start: null, end: null });
-  const [statusFilter, setStatusFilter] = useState('all'); // all, completed, in-progress, pending
-
-  // OneDrive Integration State
-  const [showOneDrivePicker, setShowOneDrivePicker] = useState(false);
-  const [onedriveFiles, setOnedriveFiles] = useState([]);
-  const [onedriveLoading, setOnedriveLoading] = useState(false);
-  const [showUploadContainer, setShowUploadContainer] = useState(true);
-
-  // LOB Categories for P&C Insurance
-  const lobCategories = [
-    { id: 'all', name: 'All Lines', icon: '📊', color: 'gray' },
-    { id: 'personal_auto', name: 'Personal Auto', icon: '🚗', color: 'blue' },
-    { id: 'commercial_auto', name: 'Commercial Auto', icon: '🚛', color: 'green' },
-    { id: 'homeowners', name: 'Homeowners', icon: '🏠', color: 'purple' },
-    { id: 'property', name: 'Property', icon: '🏢', color: 'orange' },
-    { id: 'general_liability', name: 'General Liability', icon: '🛡️', color: 'red' },
-    { id: 'workers_comp', name: 'Workers Comp', icon: '👷', color: 'yellow' },
-    { id: 'cyber', name: 'Cyber Insurance', icon: '💻', color: 'indigo' },
-    { id: 'professional_liability', name: 'Professional Liability', icon: '⚖️', color: 'pink' },
-    { id: 'umbrella', name: 'Umbrella', icon: '☂️', color: 'teal' },
-    { id: 'marine', name: 'Marine', icon: '🚢', color: 'cyan' },
-    { id: 'aviation', name: 'Aviation', icon: '✈️', color: 'amber' }
-  ];
-
-  // Filtering functions
-  const filterByLOB = (items, lob) => {
-    if (lob === 'all') return items;
-    return items.filter(item => {
-      const itemLOB = item.lob || item.line_of_business || 'unknown';
-      return itemLOB.toLowerCase().includes(lob.replace('_', ' '));
-    });
-  };
-
-  const filterByTags = (items, tags) => {
-    if (!tags || tags.length === 0) return items;
-    return items.filter(item => {
-      const itemTags = item.tags || [];
-      return tags.some(tag => itemTags.includes(tag));
-    });
-  };
-
-  // Enhanced filtering functions
-  const filterBySearch = (items, query) => {
-    if (!query) return items;
-    const lowerQuery = query.toLowerCase().trim();
-    
-    return items.filter(item => {
-      // Document/File name search (highest priority)
-      const name = (item.name || item.title || item.filename || '').toLowerCase();
-      const nameMatch = name.includes(lowerQuery);
-      
-      // Content search
-      const content = (item.content || item.description || item.original_text || '').toLowerCase();
-      const contentMatch = content.includes(lowerQuery);
-      
-      // Tags search
-      const tags = (item.tags || []).join(' ').toLowerCase();
-      const tagsMatch = tags.includes(lowerQuery);
-      
-      // LOB search
-      const lob = (item.lob || item.line_of_business || '').toLowerCase();
-      const lobMatch = lob.includes(lowerQuery);
-      
-      // User email search
-      const userEmail = (item.user_email || '').toLowerCase();
-      const emailMatch = userEmail.includes(lowerQuery);
-      
-      // File type search
-      const fileType = (item.file_type || item.type || '').toLowerCase();
-      const fileTypeMatch = fileType.includes(lowerQuery);
-      
-      // Status search
-      const status = (item.status || '').toLowerCase();
-      const statusMatch = status.includes(lowerQuery);
-      
-      // Date search (search in formatted date strings)
-      const date = (item.date || item.upload_date || '').toString().toLowerCase();
-      const dateMatch = date.includes(lowerQuery);
-      
-      // Multi-word search support
-      const searchTerms = lowerQuery.split(/\s+/);
-      const allTermsMatch = searchTerms.every(term => 
-        name.includes(term) || 
-        content.includes(term) || 
-        tags.includes(term) || 
-        lob.includes(term) ||
-        userEmail.includes(term) ||
-        fileType.includes(term) ||
-        status.includes(term) ||
-        date.includes(term)
-      );
-      
-      return nameMatch || contentMatch || tagsMatch || lobMatch || 
-             emailMatch || fileTypeMatch || statusMatch || dateMatch || allTermsMatch;
-    });
-  };
-
-  const filterByDateRange = (items, range) => {
-    if (!range.start && !range.end) return items;
-    return items.filter(item => {
-      const itemDate = new Date(item.uploadDate || item.date || item.createdAt);
-      const startDate = range.start ? new Date(range.start) : null;
-      const endDate = range.end ? new Date(range.end) : null;
-      
-      if (startDate && endDate) {
-        return itemDate >= startDate && itemDate <= endDate;
-      } else if (startDate) {
-        return itemDate >= startDate;
-      } else if (endDate) {
-        return itemDate <= endDate;
-      }
-      return true;
-    });
-  };
-
-  const filterByStatus = (items, status) => {
-    if (status === 'all') return items;
-    return items.filter(item => {
-      const itemStatus = item.status || 'completed';
-      return itemStatus.toLowerCase() === status.toLowerCase();
-    });
-  };
-
-  const sortItems = (items, sortBy, sortOrder) => {
-    return [...items].sort((a, b) => {
-      let aValue, bValue;
-      
-      switch (sortBy) {
-        case 'name':
-          aValue = (a.name || a.title || a.filename || '').toLowerCase();
-          bValue = (b.name || b.title || b.filename || '').toLowerCase();
-          break;
-        case 'date':
-          aValue = new Date(a.uploadDate || a.date || a.createdAt);
-          bValue = new Date(b.uploadDate || b.date || b.createdAt);
-          break;
-        case 'lob':
-          aValue = (a.lob || a.line_of_business || '').toLowerCase();
-          bValue = (b.lob || b.line_of_business || '').toLowerCase();
-          break;
-        case 'tags':
-          aValue = (a.tags || []).length;
-          bValue = (b.tags || []).length;
-          break;
-        default:
-          aValue = '';
-          bValue = '';
-      }
-      
-      if (sortOrder === 'asc') {
-        return aValue > bValue ? 1 : -1;
-      } else {
-        return aValue < bValue ? 1 : -1;
-      }
-    });
-  };
-
-  // Update filtered data when selections change
-  useEffect(() => {
-    let filteredDocs = filterByTags(filterByLOB(documents, selectedLOB), projectTags);
-    let filteredAnalyses = filterByTags(filterByLOB(pastAnalyses, selectedLOB), projectTags);
-    
-    // Apply additional filters
-    filteredDocs = filterBySearch(filteredDocs, searchQuery);
-    filteredAnalyses = filterBySearch(filteredAnalyses, searchQuery);
-    
-    filteredDocs = filterByDateRange(filteredDocs, dateRange);
-    filteredAnalyses = filterByDateRange(filteredAnalyses, dateRange);
-    
-    filteredDocs = filterByStatus(filteredDocs, statusFilter);
-    filteredAnalyses = filterByStatus(filteredAnalyses, statusFilter);
-    
-    // Apply sorting
-    filteredDocs = sortItems(filteredDocs, sortBy, sortOrder);
-    filteredAnalyses = sortItems(filteredAnalyses, sortBy, sortOrder);
-    
-    setFilteredDocuments(filteredDocs);
-    setFilteredAnalyses(filteredAnalyses);
-  }, [documents, pastAnalyses, selectedLOB, projectTags, searchQuery, dateRange, statusFilter, sortBy, sortOrder]);
-
-  // Tag management functions
-  const addTag = (tag) => {
-    if (tag && !projectTags.includes(tag)) {
-      setProjectTags([...projectTags, tag]);
-      setNewTag('');
-      setShowTagInput(false);
-    }
-  };
-
-  const removeTag = (tagToRemove) => {
-    setProjectTags(projectTags.filter(tag => tag !== tagToRemove));
-  };
-
-  const addNewTag = () => {
-    if (newTag && !availableTags.includes(newTag)) {
-      setAvailableTags([...availableTags, newTag]);
-    }
-    addTag(newTag);
-  };
-
-  // Authentication handlers
-  const handleLogin = (success) => {
-    if (success) {
-      setIsAuthenticated(true);
-    }
-  };
-
-  const handleLogout = () => {
-    setIsAuthenticated(false);
-    // Reset any state as needed
-    setResults(null);
-    setCurrentStep(0);
-    setIsProcessing(false);
-    setShowUploadContainer(true);
-    setNotification({ show: false, message: '', type: 'info' });
-  };
 
   // Enhanced progress tracking
   const stepNames = [
@@ -2590,11 +1190,6 @@ function MainApp() {
     };
   }, []);
 
-  // If not authenticated, show login page
-  if (!isAuthenticated) {
-    return <LoginPage onLogin={handleLogin} />;
-  }
-
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -2621,8 +1216,6 @@ function MainApp() {
     setCurrentStep(1);
     setResults(null);
     setApprovalReady(false);
-    // Show upload container when starting new analysis
-    setShowUploadContainer(true);
     
     const formData = new FormData();
     formData.append('file', file);
@@ -2659,9 +1252,7 @@ function MainApp() {
         
         setResults(data);
         setApprovalReady(true);
-        // Automatically hide upload container when analysis completes
-        setShowUploadContainer(false);
-        setNotification({ show: true, message: 'Analysis completed successfully! Upload section hidden for better visibility.', type: 'success' });
+        setNotification({ show: true, message: 'Analysis completed successfully! Approval button is now enabled.', type: 'success' });
         
         // Add to notifications for collaboration
         setNotifications(prev => [...prev, `New analysis completed for ${file.name}`]);
@@ -2701,103 +1292,6 @@ function MainApp() {
     if (fileInput.files[0]) {
       await handleFileUpload(fileInput.files[0]);
     }
-  };
-
-  // OneDrive Integration Handlers
-  const handleOneDriveFileSelect = async (onedriveFile) => {
-    try {
-      setOnedriveLoading(true);
-      setNotification({ show: true, message: 'Processing OneDrive file...', type: 'info' });
-      
-      // The file is already downloaded and converted to a File object by OneDrivePicker
-      // Just process it as if it was uploaded locally
-      await handleFileUpload(onedriveFile);
-      
-      setNotification({ 
-        show: true, 
-        message: `OneDrive file "${onedriveFile.name}" processed successfully!`, 
-        type: 'success' 
-      });
-    } catch (error) {
-      console.error('Error processing OneDrive file:', error);
-      setNotification({ 
-        show: true, 
-        message: `Failed to process OneDrive file: ${error.message}`, 
-        type: 'error' 
-      });
-    } finally {
-      setOnedriveLoading(false);
-    }
-  };
-
-  const handleConnectOneDrive = async () => {
-    try {
-      setOnedriveLoading(true);
-      setNotification({ show: true, message: 'Getting OneDrive authorization...', type: 'info' });
-      
-      // Get the authorization URL
-      const response = await fetch('/api/integrations/onedrive/auth');
-      if (!response.ok) {
-        throw new Error('Failed to get authorization URL');
-      }
-      
-      const data = await response.json();
-      
-      // Open the authorization URL in a new window
-      const authWindow = window.open(data.auth_url, 'OneDrive Auth', 'width=600,height=700');
-      
-      // Check if the window was opened successfully
-      if (!authWindow) {
-        setNotification({ 
-          show: true, 
-          message: 'Please allow popups to connect OneDrive', 
-          type: 'warning' 
-        });
-        return;
-      }
-      
-      setNotification({ 
-        show: true, 
-        message: 'Please complete the OneDrive authorization in the new window', 
-        type: 'info' 
-      });
-      
-      // Poll for completion (user will close the window when done)
-      const checkClosed = setInterval(() => {
-        if (authWindow.closed) {
-          clearInterval(checkClosed);
-          setNotification({ 
-            show: true, 
-            message: 'OneDrive authorization completed! You can now select documents.', 
-            type: 'success' 
-          });
-          // Refresh the status
-          setTimeout(() => {
-            // Trigger a status refresh
-            const event = new CustomEvent('onedrive-status-refresh');
-            window.dispatchEvent(event);
-          }, 1000);
-        }
-      }, 1000);
-      
-    } catch (error) {
-      console.error('Error connecting to OneDrive:', error);
-      setNotification({ 
-        show: true, 
-        message: `Failed to connect OneDrive: ${error.message}`, 
-        type: 'error' 
-      });
-    } finally {
-      setOnedriveLoading(false);
-    }
-  };
-
-  const openOneDrivePicker = () => {
-    setShowOneDrivePicker(true);
-  };
-
-  const closeOneDrivePicker = () => {
-    setShowOneDrivePicker(false);
   };
 
   const handleDownloadAll = () => {
@@ -2915,7 +1409,6 @@ function MainApp() {
     }
   };
 
-
   const ProgressStepper = () => {
     const [showDetails, setShowDetails] = useState(false);
     
@@ -2926,7 +1419,7 @@ function MainApp() {
         <Target key="planning" className="w-5 h-5" />,
         <FileText key="tech" className="w-5 h-5" />,
         <BarChart3 key="diagram" className="w-5 h-5" />,
-        <List key="backlog" className="w-5 h-5" />,
+        <ListCollapse key="backlog" className="w-5 h-5" />,
         <CheckCircle key="final" className="w-5 h-5" />
       ];
       return icons[stepIndex] || <Activity key="default" className="w-5 h-5" />;
@@ -3107,7 +1600,7 @@ function MainApp() {
     const tabs = [
       { id: 'trd', label: 'Technical Requirements', icon: FileText },
       { id: 'diagrams', label: 'Diagrams', icon: BarChart3 },
-      { id: 'backlog', label: 'Project Backlog', icon: List },
+      { id: 'backlog', label: 'Project Backlog', icon: ListCollapse },
       { id: 'azure-devops', label: 'Azure DevOps', icon: Settings }
     ];
 
@@ -3158,79 +1651,14 @@ function MainApp() {
                   </button>
                   <button
                     onClick={() => downloadAsDocx(results.trd, 'Technical_Requirements_Document.docx')}
-                    className="flex items-center gap-2 px-3 py-1 bg-black text-white rounded hover:bg-gray-800"
+                    className="flex items-center gap-2 px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"
                   >
                     <Download className="w-4 h-4" />
                     Download DOCX
                   </button>
                 </div>
               </div>
-              <FormattedTextRenderer content={results.trd} title="Technical Requirements Document" />
-              
-              {/* Smart Suggestions */}
-              <SmartSuggestions 
-                document={selectedDocument}
-                analysis={results}
-                onApplySuggestion={(suggestion) => {
-                  console.log('Applying suggestion:', suggestion);
-                  // Here you could implement logic to apply the suggestion to the document
-                }}
-                onDismissSuggestion={(suggestion) => {
-                  console.log('Dismissing suggestion:', suggestion);
-                }}
-                showSuggestions={true}
-                maxSuggestions={5}
-              />
-
-              {/* Real-time Comments */}
-              <RealTimeComments 
-                documentId={selectedDocument?.id || 'current-document'}
-                documentTitle={selectedDocument?.filename || 'Current Document'}
-                currentUser={{ id: 'user1', name: 'Current User', avatar: null }}
-                onCommentAdd={(comment) => {
-                  console.log('New comment added:', comment);
-                }}
-                onCommentUpdate={(commentId, content) => {
-                  console.log('Comment updated:', commentId, content);
-                }}
-                onCommentDelete={(commentId) => {
-                  console.log('Comment deleted:', commentId);
-                }}
-                onCommentReply={(parentId, reply) => {
-                  console.log('Reply added:', parentId, reply);
-                }}
-                showComments={true}
-                allowAnonymous={false}
-                moderationEnabled={false}
-              />
-
-              {/* Multi-language Support */}
-              <MultiLanguageSupport 
-                document={selectedDocument}
-                onLanguageChange={(languageCode) => {
-                  console.log('Language changed to:', languageCode);
-                }}
-                onTranslationRequest={(content, targetLanguage) => {
-                  console.log('Translation requested:', targetLanguage);
-                }}
-                supportedLanguages={[
-                  { code: 'en', name: 'English', nativeName: 'English', flag: '🇺🇸' },
-                  { code: 'es', name: 'Spanish', nativeName: 'Español', flag: '🇪🇸' },
-                  { code: 'fr', name: 'French', nativeName: 'Français', flag: '🇫🇷' },
-                  { code: 'de', name: 'German', nativeName: 'Deutsch', flag: '🇩🇪' },
-                  { code: 'it', name: 'Italian', nativeName: 'Italiano', flag: '🇮🇹' },
-                  { code: 'pt', name: 'Portuguese', nativeName: 'Português', flag: '🇵🇹' },
-                  { code: 'ru', name: 'Russian', nativeName: 'Русский', flag: '🇷🇺' },
-                  { code: 'ja', name: 'Japanese', nativeName: '日本語', flag: '🇯🇵' },
-                  { code: 'ko', name: 'Korean', nativeName: '한국어', flag: '🇰🇷' },
-                  { code: 'zh', name: 'Chinese', nativeName: '中文', flag: '🇨🇳' },
-                  { code: 'ar', name: 'Arabic', nativeName: 'العربية', flag: '🇸🇦' },
-                  { code: 'hi', name: 'Hindi', nativeName: 'हिन्दी', flag: '🇮🇳' }
-                ]}
-                showLanguageSelector={true}
-                enableTranslation={true}
-                enableAutoDetection={true}
-              />
+              <MarkdownRenderer markdown={results.trd} title="Technical Requirements Document" />
             </div>
           )}
 
@@ -3267,7 +1695,6 @@ function MainApp() {
                     code={extractMermaid(results.hld)} 
                     id="hld" 
                     showDownloadPng={true} 
-                showPngInline={true}
                     title="High Level Design"
                   />
                 </div>
@@ -3304,7 +1731,6 @@ function MainApp() {
                     code={extractMermaid(results.lld)} 
                     id="lld" 
                     showDownloadPng={true} 
-                showPngInline={true}
                     title="Low Level Design"
                   />
                 </div>
@@ -3350,9 +1776,10 @@ function MainApp() {
               {/* Backlog Statistics */}
               <BacklogStats backlog={results.backlog} />
               
-              {/* Board-style Backlog */}
-              <div className="glass-card rounded-lg shadow-lg border p-4">
-                <BacklogBoard backlog={results.backlog} />
+              {/* Backlog Cards */}
+              <div className="glass-card rounded-lg shadow-lg border p-6">
+                <h4 className="text-lg font-semibold text-gray-800 mb-4">Backlog Items</h4>
+                <BacklogCards backlog={results.backlog} />
               </div>
             </div>
           )}
@@ -3636,127 +2063,21 @@ function MainApp() {
           setSelectedAnalysis={setSelectedAnalysis}
           sidebarOpen={sidebarOpen}
           setSidebarOpen={setSidebarOpen}
-          onLogout={handleLogout}
-          selectedLOB={selectedLOB}
-          setSelectedLOB={setSelectedLOB}
-          projectTags={projectTags}
-          setProjectTags={setProjectTags}
-          availableTags={availableTags}
-          setAvailableTags={setAvailableTags}
-          showTagInput={showTagInput}
-          setShowTagInput={setShowTagInput}
-          newTag={newTag}
-          setNewTag={setNewTag}
-          addTag={addTag}
-          removeTag={removeTag}
-          addNewTag={addNewTag}
-          lobCategories={lobCategories}
-          filteredDocuments={filteredDocuments}
-          filteredAnalyses={filteredAnalyses}
         />
 
         {/* Main Content Area */}
         <div className={`flex-1 transition-all duration-300 ${sidebarOpen ? 'lg:ml-6' : 'lg:ml-6'}`}>
           <div className="max-w-6xl mx-auto px-3 sm:px-4 lg:px-6 py-6">
-            {/* Breadcrumb Navigation */}
-            <BreadcrumbNavigation 
-              activeSection={activeSection}
-              selectedLOB={selectedLOB}
-              projectTags={projectTags}
-              lobCategories={lobCategories}
-            />
-            
-            {/* Quick Stats */}
-            <QuickStats 
-              documents={filteredDocuments}
-              analyses={filteredAnalyses}
-              selectedLOB={selectedLOB}
-              projectTags={projectTags}
-              lobCategories={lobCategories}
-              setActiveSection={setActiveSection}
-            />
-
-            {/* Enhanced Search and Filter Bar */}
-            <AdvancedSearch 
-              documents={documents}
-              analyses={pastAnalyses}
-              onSearchResults={(results) => {
-                // Update filtered results based on search
-                const docResults = results.filter(r => r.type === 'document');
-                const analysisResults = results.filter(r => r.type === 'analysis');
-                setFilteredDocuments(docResults);
-                setFilteredAnalyses(analysisResults);
-              }}
-              placeholder="Search documents, analyses, and content..."
-              showFilters={true}
-              showSorting={true}
-              enableSavedSearches={true}
-            />
             {activeSection === 'upload' && (
               <div className="space-y-4">
-                {/* Upload Container - Hidden after analysis completion */}
-                {(!results || showUploadContainer) && (
-                  <div className="glass-card rounded-lg shadow-lg border p-4 animate-scale-in">
-                    <div className="flex items-center justify-between mb-3">
-                      <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-                        <UploadCloud className="w-5 h-5" />
-                        Upload Requirements Document
-                      </h2>
-                      {results && (
-                        <button
-                          onClick={() => setShowUploadContainer(false)}
-                          className="text-gray-500 hover:text-gray-700 transition-colors"
-                          title="Hide upload section"
-                        >
-                          <X className="w-5 h-5" />
-                        </button>
-                      )}
-                    </div>
+                <div className="glass-card rounded-lg shadow-lg border p-4 animate-scale-in">
+                  <h2 className="text-xl font-bold text-gray-900 mb-3 flex items-center gap-2">
+                    <UploadCloud className="w-5 h-5" />
+                    Upload Requirements Document
+                  </h2>
                   <p className="text-gray-600 mb-4 text-sm">
                     Upload your business requirements document (PDF or DOCX) to generate comprehensive analysis including technical requirements, diagrams, and project backlog.
                   </p>
-
-                  {/* OneDrive Integration */}
-                  <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <Cloud className="w-5 h-5 text-blue-600" />
-                        <span className="text-sm font-medium text-blue-800">OneDrive Integration</span>
-                        <OneDriveStatusIndicator />
-                      </div>
-                      <div className="flex gap-2">
-                        <button
-                          type="button"
-                          onClick={handleConnectOneDrive}
-                          className="flex items-center gap-2 px-3 py-2 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 transition-colors"
-                        >
-                          <Cloud className="w-4 h-4" />
-                          Connect OneDrive
-                        </button>
-                        <button
-                          type="button"
-                          onClick={openOneDrivePicker}
-                          disabled={isProcessing || onedriveLoading}
-                          className="flex items-center gap-2 px-3 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                        >
-                          {onedriveLoading ? (
-                            <>
-                              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                              Loading...
-                            </>
-                          ) : (
-                            <>
-                              <Cloud className="w-4 h-4" />
-                              Select from OneDrive
-                            </>
-                          )}
-                        </button>
-                      </div>
-                    </div>
-                    <p className="text-xs text-blue-600 mt-2">
-                      Connect your OneDrive account to access and import documents directly for analysis.
-                    </p>
-                  </div>
 
                   {isProcessing && <ProgressStepper />}
 
@@ -3806,7 +2127,7 @@ function MainApp() {
                           </>
                         ) : (
                           <>
-                            <Send className="w-5 h-5" />
+                            <SendIcon className="w-5 h-5" />
                             Analyze Document
                           </>
                         )}
@@ -3814,20 +2135,6 @@ function MainApp() {
                     </div>
                   </form>
                 </div>
-                )}
-
-                {/* Show Upload Again Button - Only visible when upload is hidden and results exist */}
-                {results && !showUploadContainer && (
-                  <div className="text-center">
-                    <button
-                      onClick={() => setShowUploadContainer(true)}
-                      className="inline-flex items-center gap-2 px-4 py-2 text-blue-600 hover:text-blue-700 border border-blue-300 hover:border-blue-400 rounded-lg transition-colors"
-                    >
-                      <UploadCloud className="w-4 h-4" />
-                      Show Upload Section
-                    </button>
-                  </div>
-                )}
 
                 {results && (
                   <div className="space-y-4 animate-fade-in-up">
@@ -3864,7 +2171,7 @@ function MainApp() {
                               : 'bg-gray-400 text-gray-200 cursor-not-allowed'
                           }`}
                         >
-                          <Send className="w-4 h-4" />
+                          <SendIcon className="w-4 h-4" />
                           {approvalReady ? 'Send for Approval' : 'Approval Pending'}
                         </button>
                       </div>
@@ -3877,21 +2184,12 @@ function MainApp() {
 
             {activeSection === 'documents' && (
               <div className="space-y-4">
-                <EnhancedDocumentViewer 
-                  documents={filteredDocuments} 
-                  title="Uploaded Documents"
-                  showThumbnails={true}
-                  enableFullscreen={true}
-                  enableAnnotations={false}
-                  onDownload={(document) => {
-                    // Handle document download
-                    const link = document.createElement('a');
-                    link.href = document.url || `data:text/plain;charset=utf-8,${encodeURIComponent(document.content || '')}`;
-                    link.download = document.filename || document.name;
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                  }}
+                <DocumentsSection 
+                  documents={documents} 
+                  selectedDocument={selectedDocument} 
+                  setSelectedDocument={setSelectedDocument}
+                  setDocuments={setDocuments}
+                  setNotification={setNotification}
                 />
               </div>
             )}
@@ -3899,12 +2197,9 @@ function MainApp() {
             {activeSection === 'analyses' && (
               <div className="space-y-4">
                 <PastAnalysesSection 
-                  pastAnalyses={filteredAnalyses} 
+                  pastAnalyses={pastAnalyses} 
                   selectedAnalysis={selectedAnalysis}
                   setSelectedAnalysis={setSelectedAnalysis}
-                  selectedLOB={selectedLOB}
-                  projectTags={projectTags}
-                  lobCategories={lobCategories}
                 />
               </div>
             )}
@@ -3954,14 +2249,6 @@ function MainApp() {
           </div>
         </div>
       )}
-
-      {/* OneDrive Picker Modal */}
-      <OneDrivePicker
-        isVisible={showOneDrivePicker}
-        onFileSelect={handleOneDriveFileSelect}
-        onClose={closeOneDrivePicker}
-        title="Select Document from OneDrive"
-      />
     </div>
   );
 }
@@ -3976,3 +2263,4 @@ function AppWithErrorBoundary() {
 }
 
 export default AppWithErrorBoundary;
+

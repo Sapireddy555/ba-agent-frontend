@@ -1,19 +1,13 @@
 {
-  "name": "ba-agent-frontend",
-  "version": "1.0.0",
+  "name": "frontend",
+  "version": "0.1.0",
   "private": true,
-  "homepage": ".",
   "dependencies": {
-    "@reactflow/background": "^11.3.14",
-    "@reactflow/controls": "^11.2.14",
-    "@reactflow/minimap": "^11.7.14",
-    "@reactflow/node-resizer": "^2.2.14",
     "@testing-library/dom": "^10.4.0",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.3.0",
     "@testing-library/user-event": "^13.5.0",
     "dompurify": "^3.2.6",
-    "html-to-image": "^1.11.13",
     "jszip": "^3.10.1",
     "lucide-react": "^0.525.0",
     "mermaid": "^11.8.1",
@@ -23,15 +17,13 @@
     "react-markdown": "^10.1.0",
     "react-refresh": "^0.14.0",
     "react-scripts": "5.0.1",
-    "reactflow": "^11.11.4",
     "remark-gfm": "^4.0.1",
     "web-vitals": "^2.1.4"
   },
   "scripts": {
     "start": "react-scripts start --fast-refresh",
     "build": "react-scripts build",
-    "test": "CI=false react-scripts test",
-    "test:ci": "CI=false react-scripts test --coverage --no-watch --no-interactive",
+    "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {
@@ -57,10 +49,5 @@
     "autoprefixer": "^10.4.21",
     "postcss": "^8.5.6",
     "tailwindcss": "^3.4.3"
-  },
-  "jest": {
-    "transformIgnorePatterns": [
-  "node_modules/(?!(react-markdown|remark-.*|rehype-.*|unified|bail|is-plain-obj|trough|vfile.*|unist-.*|mdast-.*|micromark.*|parse-entities|character-entities.*|character-reference-invalid|is-alphanumerical|is-decimal|is-hexadecimal|space-separated-tokens|comma-separated-tokens|hast-.*|property-information|hastscript|web-namespaces|zwitch|html-void-elements|ccount|escape-string-regexp|markdown-table|trim-trailing-lines|trim-lines|longest-streak|devlop|estree-util-is-identifier-name|html-url-attributes|decode-named-character-reference)/)"
-    ]
   }
 }
