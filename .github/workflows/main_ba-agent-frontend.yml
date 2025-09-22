@@ -50,7 +50,7 @@ jobs:
       - name: List downloaded files (debug)
         run: |
           ls -la
-          ls -la build/ || echo "No build folder found"
+          ls -la frontend-build/ || echo "No build folder found"
       
       - name: Login to Azure
         uses: azure/login@v2
@@ -65,11 +65,4 @@ jobs:
         with:
           app-name: 'ba-agent-frontend'
           slot-name: 'Production'
-<<<<<<< HEAD
-          package: .
-
-          
-
-=======
           package: ./frontend-build
->>>>>>> 6e841900a646e4d749054cdfd190269000812077
