@@ -1,8 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
 // Removed duplicate ArrowRight import
 import { createPortal } from 'react-dom';
-import { 
-// Removed lucide-react icon imports
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import JSZip from 'jszip';
