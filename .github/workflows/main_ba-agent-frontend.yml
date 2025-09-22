@@ -31,7 +31,7 @@ jobs:
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
-          name: build
+          name: frontend-build
           path: build
 
   deploy:
@@ -45,7 +45,7 @@ jobs:
       - name: Download artifact from build job
         uses: actions/download-artifact@v4
         with:
-          name: build
+          name: frontend-build
 
       - name: List downloaded files (debug)
         run: |
@@ -65,7 +65,11 @@ jobs:
         with:
           app-name: 'ba-agent-frontend'
           slot-name: 'Production'
+<<<<<<< HEAD
           package: .
 
           
 
+=======
+          package: ./frontend-build
+>>>>>>> 6e841900a646e4d749054cdfd190269000812077
