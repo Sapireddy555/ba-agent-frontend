@@ -929,21 +929,29 @@ export default function App() {
                   <CheckCircle className="w-12 h-12 text-green-500 mb-4" />
                   <div className="font-bold text-lg text-green-700 mb-2">Analysis Complete!</div>
                   <div className="text-gray-500 mb-4">Your business requirements have been analyzed. See the generated artifacts below.</div>
-                  <button
-                    className="mb-4 px-6 py-3 font-semibold rounded-lg shadow text-lg"
-                    style={{
-                      minWidth: '260px',
-                      color: '#111',
-                      background: '#22c55e', // Tailwind green-500
-                      border: '2px solid #111',
-                      zIndex: 9999,
-                      position: 'relative'
-                    }}
-                    onClick={handleSendForApproval}
-                    disabled={!results}
-                  >
-                    Send for Approval
-                  </button>
+                    <button
+                      className="mb-4 px-6 py-3 font-semibold rounded-lg shadow text-lg"
+                      style={{
+                        minWidth: '260px',
+                        color: '#111',
+                        background: '#22c55e', // Tailwind green-500
+                        border: '2px solid #111',
+                        zIndex: 9999,
+                        position: 'relative'
+                      }}
+                      onClick={handleSendForApproval}
+                      disabled={!results}
+                    >
+                      Send for Approval
+                    </button>
+                    <button
+                      className="mb-2 px-6 py-3 font-semibold rounded-lg shadow text-lg bg-blue-500 text-white hover:bg-blue-600"
+                      style={{ minWidth: '260px', zIndex: 9999, position: 'relative' }}
+                      onClick={handleDownloadAll}
+                      disabled={!results}
+                    >
+                      Download All Artifacts
+                    </button>
                   <ResultsTabs />
                   <button
                     className="mt-6 px-6 py-2 bg-blue-600 text-white rounded-lg font-semibold shadow hover:bg-blue-700 transition-all"
