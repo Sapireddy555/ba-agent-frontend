@@ -1219,17 +1219,32 @@ CollaborationPanel.propTypes = {
 }
 
 function BacklogCards({ backlog }) {
-  const [expanded, setExpanded] = useState({});
-  
+// Helper function to render backlog tree
+function renderTree(items) {
+  if (!Array.isArray(items)) return null;
+  return items.map((item) => (
+    <div key={item.id || item.name || item.title} className="mb-2">
+      <div className="font-semibold text-gray-800">{item.title || item.name || 'Item'}</div>
+      {item.children && item.children.length > 0 && (
+        <div className="ml-4">
+          {renderTree(item.children)}
+        </div>
+      )}
+    </div>
+  ));
+}
   // Debug: Log the backlog prop
   console.log('BacklogCards received:', backlog);
   console.log('BacklogCards type:', typeof backlog);
   console.log('BacklogCards isArray:', Array.isArray(backlog));
-  
   if (Array.isArray(backlog) && backlog.length > 0) {
     return <div className="bg-blue-50 rounded-lg p-4 shadow-inner">{renderTree(backlog)}</div>;
   }
 }
+
+BacklogCards.propTypes = {
+  backlog: PropTypes.array.isRequired,
+};
 
 const Sidebar = ({ 
   activeSection, setActiveSection, 
@@ -1475,6 +1490,36 @@ const Sidebar = ({
     </div>
   </aside>
 );
+};
+
+Sidebar.propTypes = {
+  activeSection: PropTypes.string.isRequired,
+  setActiveSection: PropTypes.func.isRequired,
+  documents: PropTypes.array.isRequired,
+  pastAnalyses: PropTypes.array.isRequired,
+  selectedDocument: PropTypes.any,
+  setSelectedDocument: PropTypes.func.isRequired,
+  selectedAnalysis: PropTypes.any,
+  setSelectedAnalysis: PropTypes.func.isRequired,
+  sidebarOpen: PropTypes.bool.isRequired,
+  setSidebarOpen: PropTypes.func.isRequired,
+  onLogout: PropTypes.func.isRequired,
+  selectedLOB: PropTypes.any,
+  setSelectedLOB: PropTypes.func.isRequired,
+  projectTags: PropTypes.array.isRequired,
+  setProjectTags: PropTypes.func.isRequired,
+  availableTags: PropTypes.array.isRequired,
+  setAvailableTags: PropTypes.func.isRequired,
+  showTagInput: PropTypes.bool.isRequired,
+  setShowTagInput: PropTypes.func.isRequired,
+  newTag: PropTypes.string.isRequired,
+  setNewTag: PropTypes.func.isRequired,
+  addTag: PropTypes.func.isRequired,
+  removeTag: PropTypes.func.isRequired,
+  addNewTag: PropTypes.func.isRequired,
+  lobCategories: PropTypes.array.isRequired,
+  filteredDocuments: PropTypes.array.isRequired,
+  filteredAnalyses: PropTypes.array.isRequired,
 };
 
 // Breadcrumb Navigation Component
