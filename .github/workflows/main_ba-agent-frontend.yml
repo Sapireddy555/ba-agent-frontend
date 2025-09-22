@@ -64,12 +64,5 @@ jobs:
         uses: azure/webapps-deploy@v3
         with:
           app-name: 'ba-agent-frontend'
-          slot-name: 'Production'
-<<<<<<< HEAD
-          package: .
+          slot-name: 'production'
 
-          
-
-=======
-          package: ./frontend-build
->>>>>>> 6e841900a646e4d749054cdfd190269000812077
