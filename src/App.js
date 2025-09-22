@@ -685,17 +685,21 @@ export default function App() {
       { key: 'HLD', label: 'HLD', content: (
         <div className="w-full">
           <div className="flex gap-2 mb-2">
-            <button onClick={() => download(extractMermaid(results.hld), 'High_Level_Diagram.mmd', 'text/plain')} className="px-2 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 text-xs font-semibold">Download Mermaid</button>
-            <button onClick={() => handleCopy(extractMermaid(results.hld), 'HLD Mermaid')} className="px-2 py-1 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 text-xs font-semibold flex items-center gap-1"><Copy className="w-4 h-4" />Copy</button>
+            <button onClick={() => download(extractMermaid(results.hld_code), 'High_Level_Diagram.mmd', 'text/plain')} className="px-2 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 text-xs font-semibold">Download Mermaid</button>
+            <button onClick={() => handleCopy(extractMermaid(results.hld_code), 'HLD Mermaid')} className="px-2 py-1 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 text-xs font-semibold flex items-center gap-1"><Copy className="w-4 h-4" />Copy</button>
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div>
               <h3 className="font-semibold text-gray-700 mb-2">Mermaid Diagram</h3>
-              <MermaidDiagram code={extractMermaid(results.hld)} id="hld-diagram" showDownloadPng={true} showPngInline={false} />
+              <MermaidDiagram code={extractMermaid(results.hld_code)} id="hld-diagram" />
             </div>
             <div>
               <h3 className="font-semibold text-gray-700 mb-2">PNG Version</h3>
-              <MermaidDiagram code={extractMermaid(results.hld)} id="hld-png" showDownloadPng={false} showPngInline={true} />
+              {results.hld_png ? (
+                <img src={`data:image/png;base64,${results.hld_png}`} alt="HLD Diagram" className="max-w-full max-h-96 border rounded shadow bg-white p-2" />
+              ) : (
+                <div className="text-red-500">PNG not available.</div>
+              )}
             </div>
           </div>
         </div>
@@ -703,17 +707,21 @@ export default function App() {
       { key: 'LLD', label: 'LLD', content: (
         <div className="w-full">
           <div className="flex gap-2 mb-2">
-            <button onClick={() => download(extractMermaid(results.lld), 'Low_Level_Diagram.mmd', 'text/plain')} className="px-2 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 text-xs font-semibold">Download Mermaid</button>
-            <button onClick={() => handleCopy(extractMermaid(results.lld), 'LLD Mermaid')} className="px-2 py-1 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 text-xs font-semibold flex items-center gap-1"><Copy className="w-4 h-4" />Copy</button>
+            <button onClick={() => download(extractMermaid(results.lld_code), 'Low_Level_Diagram.mmd', 'text/plain')} className="px-2 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 text-xs font-semibold">Download Mermaid</button>
+            <button onClick={() => handleCopy(extractMermaid(results.lld_code), 'LLD Mermaid')} className="px-2 py-1 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 text-xs font-semibold flex items-center gap-1"><Copy className="w-4 h-4" />Copy</button>
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div>
               <h3 className="font-semibold text-gray-700 mb-2">Mermaid Diagram</h3>
-              <MermaidDiagram code={extractMermaid(results.lld)} id="lld-diagram" showDownloadPng={true} showPngInline={false} />
+              <MermaidDiagram code={extractMermaid(results.lld_code)} id="lld-diagram" />
             </div>
             <div>
               <h3 className="font-semibold text-gray-700 mb-2">PNG Version</h3>
-              <MermaidDiagram code={extractMermaid(results.lld)} id="lld-png" showDownloadPng={false} showPngInline={true} />
+              {results.lld_png ? (
+                <img src={`data:image/png;base64,${results.lld_png}`} alt="LLD Diagram" className="max-w-full max-h-96 border rounded shadow bg-white p-2" />
+              ) : (
+                <div className="text-red-500">PNG not available.</div>
+              )}
             </div>
           </div>
         </div>
@@ -917,24 +925,25 @@ export default function App() {
                 </div>
               )}
               {step === 'results' && (
-                <div className="flex flex-col items-center justify-center min-h-[300px] bg-white rounded-2xl shadow-xl p-8 w-full">
-                  <div className="w-full flex justify-end gap-4 mb-4">
-                    <button
-                      className="px-4 py-2 bg-gray-600 text-white font-medium rounded-lg shadow hover:bg-gray-700 transition-all"
-                      onClick={handleDownloadAll}
-                    >
-                      Download All
-                    </button>
-                    <button
-                      className="px-4 py-2 bg-green-600 text-white font-medium rounded-lg shadow hover:bg-green-700 transition-all"
-                      onClick={handleSendForApproval}
-                    >
-                      Send for Approval
-                    </button>
-                  </div>
+                <div className="flex flex-col items-center justify-center min-h-[300px] bg-white rounded-2xl shadow-xl p-8 w-full mx-auto">
                   <CheckCircle className="w-12 h-12 text-green-500 mb-4" />
                   <div className="font-bold text-lg text-green-700 mb-2">Analysis Complete!</div>
                   <div className="text-gray-500 mb-4">Your business requirements have been analyzed. See the generated artifacts below.</div>
+                  <button
+                    className="mb-4 px-6 py-3 font-semibold rounded-lg shadow text-lg"
+                    style={{
+                      minWidth: '260px',
+                      color: '#111',
+                      background: '#22c55e', // Tailwind green-500
+                      border: '2px solid #111',
+                      zIndex: 9999,
+                      position: 'relative'
+                    }}
+                    onClick={handleSendForApproval}
+                    disabled={!results}
+                  >
+                    Send for Approval
+                  </button>
                   <ResultsTabs />
                   <button
                     className="mt-6 px-6 py-2 bg-blue-600 text-white rounded-lg font-semibold shadow hover:bg-blue-700 transition-all"
